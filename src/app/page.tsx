@@ -34,6 +34,7 @@ export default function Home() {
   const [floatingTexts, setFloatingTexts] = useState<FloatingText[]>([]);
   const [textIdCounter, setTextIdCounter] = useState(0);
   const [farcasterUser, setFarcasterUser] = useState<any>(null);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   const [activeTab, setActiveTab] = useState<'home' | 'rewards' | 'leaderboard' | 'profile'>('home');
 
@@ -377,10 +378,7 @@ export default function Home() {
               {/* Action Buttons */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <button 
-                  onClick={() => {
-                    const text = encodeURIComponent(`I've tapped ${score.toLocaleString()} eggs and earned ${eggBalance.toLocaleString()} 🥚 on 1 Million Egg! Can you beat me?`);
-                    sdk.actions.openUrl(`https://warpcast.com/~/compose?text=${text}`);
-                  }}
+                  onClick={() => setShowShareModal(true)}
                   style={{ 
                     width: '100%', padding: '14px', background: 'var(--accent-blue)', color: '#fff', 
                     borderRadius: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center', 
@@ -435,6 +433,61 @@ export default function Home() {
           <span>Profile</span>
         </button>
       </nav>
+
+      {/* Share Modal */}
+      {showShareModal && (
+        <div 
+          className="fade-in"
+          style={{ 
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
+            background: 'rgba(0,0,0,0.8)', zIndex: 1000, 
+            display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px'
+          }}
+          onClick={() => setShowShareModal(false)}
+        >
+          <div 
+            style={{ 
+              background: '#0a0a0c', border: '1px solid #1f232b', borderRadius: '24px', 
+              padding: '24px', width: '100%', maxWidth: '340px', display: 'flex', flexDirection: 'column', gap: '16px' 
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 style={{ textAlign: 'center', margin: 0, fontSize: '20px' }}>Share Your Score 🥚</h3>
+            <p style={{ textAlign: 'center', color: '#9ca3af', margin: 0, fontSize: '14px' }}>Let everyone know how many eggs you've tapped!</p>
+            
+            <button 
+              onClick={() => {
+                  const text = encodeURIComponent(`I've tapped ${score.toLocaleString()} eggs and earned ${eggBalance.toLocaleString()} 🥚 on 1 Million Egg! Can you beat me?`);
+                  window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
+                  setShowShareModal(false);
+              }}
+              style={{ width: '100%', padding: '14px', background: '#1da1f2', color: '#fff', border: 'none', borderRadius: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', fontWeight: 'bold' }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+              Share on X (Twitter)
+            </button>
+
+            <button 
+              onClick={() => {
+                  const text = encodeURIComponent(`I've tapped ${score.toLocaleString()} eggs and earned ${eggBalance.toLocaleString()} 🥚 on 1 Million Egg! Can you beat me?`);
+                  sdk.actions.openUrl(`https://warpcast.com/~/compose?text=${text}`);
+                  setShowShareModal(false);
+              }}
+              style={{ width: '100%', padding: '14px', background: '#8a63d2', color: '#fff', border: 'none', borderRadius: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', fontWeight: 'bold' }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM12 17a5 5 0 1 1 0-10 5 5 0 0 1 0 10zM12 15a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/></svg>
+              Share on Farcaster
+            </button>
+
+            <button 
+              onClick={() => setShowShareModal(false)}
+              style={{ width: '100%', padding: '14px', background: 'transparent', color: '#9ca3af', border: 'none', borderRadius: '12px', fontWeight: 'bold', marginTop: '8px' }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
