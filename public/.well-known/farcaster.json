@@ -1,9 +1,4 @@
 {
-  "accountAssociation": {
-    "header": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9",
-    "payload": "eyJkb21haW4iOiIxLW1pbGxpb24tZWdnLnZlcmNlbC5hcHAifQ",
-    "signature": "mock_signature_for_development_replace_with_real_one_later"
-  },
   "frame": {
     "version": "1",
     "name": "1 Million Egg",
