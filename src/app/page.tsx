@@ -3,11 +3,12 @@
 import { useState, useCallback, useEffect } from 'react';
 import Image from 'next/image';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt, useConnect } from 'wagmi';
 import { parseEther } from 'viem';
 import toast, { Toaster } from 'react-hot-toast';
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from '@/constants/contract';
 import sdk from '@farcaster/frame-sdk';
+import { farcasterFrame } from '@farcaster/frame-wagmi-connector';
 
 interface FloatingText {
   id: number;
@@ -27,21 +28,32 @@ const REWARD_TIERS = [
 
 export default function Home() {
   const { address, isConnected } = useAccount();
+  const { connect } = useConnect();
   const [isClicked, setIsClicked] = useState(false);
   const [floatingTexts, setFloatingTexts] = useState<FloatingText[]>([]);
   const [textIdCounter, setTextIdCounter] = useState(0);
 
   // Notify Farcaster Frame v2 that the app has finished loading to dismiss the splash screen
+  // Auto-connect Farcaster wallet, and prompt to add Frame
   useEffect(() => {
     const initFarcaster = async () => {
       try {
         await sdk.actions.ready();
+        
+        // Auto-connect Wagmi to Farcaster Wallet
+        connect({ connector: farcasterFrame() });
+
+        // Prompt to Add Mini App if not added
+        const context = await sdk.context;
+        if (context?.client && !context.client.added) {
+          sdk.actions.addFrame();
+        }
       } catch (e) {
         console.error("Failed to call farcaster ready:", e);
       }
     };
     initFarcaster();
-  }, []);
+  }, [connect]);
 
   // Contract Reads
   const { data: globalScoreData, refetch: refetchGlobal } = useReadContract({
