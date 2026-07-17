@@ -30,7 +30,7 @@ contract EggClicker is ReentrancyGuard {
     address public owner;
     IERC20 public usdcToken;
 
-    uint256 public constant TAP_FEE = 0.0000055 ether;
+    uint256 public constant TAP_FEE = 0.000003 ether;
     uint256 public globalScore;
     
     mapping(address => uint256) public scores;

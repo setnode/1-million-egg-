@@ -113,7 +113,7 @@ export default function Home() {
       address: CONTRACT_ADDRESS,
       abi: CONTRACT_ABI,
       functionName: 'tap',
-      value: parseEther('0.0000055'),
+      value: parseEther('0.000003'),
     });
 
     // Add floating text
