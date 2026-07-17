@@ -33,6 +33,8 @@ export default function Home() {
   const [floatingTexts, setFloatingTexts] = useState<FloatingText[]>([]);
   const [textIdCounter, setTextIdCounter] = useState(0);
 
+  const [activeTab, setActiveTab] = useState<'home' | 'rewards' | 'profile'>('home');
+
   // Notify Farcaster Frame v2 that the app has finished loading to dismiss the splash screen
   // Auto-connect Farcaster wallet, and prompt to add Frame
   useEffect(() => {
@@ -200,7 +202,7 @@ export default function Home() {
     : [];
 
   return (
-    <main className="container">
+    <main className="container" style={{ paddingBottom: '90px' }}>
       <Toaster position="top-center" toastOptions={{
         style: {
           background: '#333',
@@ -218,138 +220,194 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Stats Header Area */}
-      <div style={{ display: 'flex', gap: '1rem', width: '100%', maxWidth: '400px', margin: '0 auto' }}>
-        {/* Score Section */}
-        <section className="score-section" style={{ flex: 1 }}>
-          <div className="score-label">Your Score</div>
-          <div className="score-value">
-            {score.toLocaleString('en-US')}
-          </div>
-          <div className="score-hint">Lifetime Taps</div>
-        </section>
+      {/* --- HOME TAB --- */}
+      {activeTab === 'home' && (
+        <div className="tab-content fade-in">
+          {/* Stats Header Area */}
+          <div style={{ display: 'flex', gap: '1rem', width: '100%', maxWidth: '400px', margin: '0 auto' }}>
+            {/* Score Section */}
+            <section className="score-section" style={{ flex: 1 }}>
+              <div className="score-label">Your Score</div>
+              <div className="score-value">
+                {score.toLocaleString('en-US')}
+              </div>
+              <div className="score-hint">Lifetime Taps</div>
+            </section>
 
-        {/* Eggs Section */}
-        <section className="score-section" style={{ flex: 1 }}>
-          <div className="score-label text-gold">Your Eggs</div>
-          <div className="score-value">
-            {eggBalance.toLocaleString('en-US')} <span className="text-gold">🥚</span>
+            {/* Eggs Section */}
+            <section className="score-section" style={{ flex: 1 }}>
+              <div className="score-label text-gold">Your Eggs</div>
+              <div className="score-value">
+                {eggBalance.toLocaleString('en-US')} <span className="text-gold">🥚</span>
+              </div>
+              <div className="score-hint">Available to Spend</div>
+            </section>
           </div>
-          <div className="score-hint">Available to Spend</div>
-        </section>
-      </div>
 
-      {/* Egg Clicker Area */}
-      <section className="egg-container">
-        <div 
-          className={`egg-wrapper ${isClicked ? 'clicked' : ''}`}
-          onClick={handleTap}
-        >
-          <div className="egg-glow"></div>
-          <Image 
-            src="/egg.png" 
-            alt="1 Million Egg" 
-            width={280} 
-            height={280} 
-            className="egg-image"
-            priority
-          />
-          {floatingTexts.map(text => (
+          {/* Egg Clicker Area */}
+          <section className="egg-container">
             <div 
-              key={text.id} 
-              className="floating-text"
-              style={{ left: `${text.x}%`, top: `${text.y}%` }}
+              className={`egg-wrapper ${isClicked ? 'clicked' : ''}`}
+              onClick={handleTap}
             >
-              +1
-            </div>
-          ))}
-        </div>
-        
-        <button className="tap-button" onClick={handleTap}>
-          TAP THE EGG <br/> +1 <span style={{fontSize: '24px'}}>🥚</span>
-        </button>
-      </section>
-
-      {/* Rewards Section */}
-      <section className="glass-panel" style={{ marginTop: '2rem' }}>
-        <div className="leaderboard-header">
-          <div className="title text-gold">
-            USDC REWARDS 💰
-          </div>
-        </div>
-        <p style={{ color: '#9ca3af', fontSize: '0.85rem', marginBottom: '1rem', textAlign: 'center' }}>
-          Exchange your collected eggs for real USDC! (Base Network)
-        </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          {REWARD_TIERS.map((reward) => (
-            <div key={reward.tier} className="leaderboard-item" style={{ padding: '0.75rem 1rem' }}>
-              <div className="rank-info" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span className="text-gold" style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>{reward.eggs} 🥚</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <div className="score" style={{ color: '#22c55e' }}>${reward.usdc.toFixed(2)} USDC</div>
-                <button 
-                  onClick={() => handleClaim(reward.tier)}
-                  style={{
-                    background: eggBalance >= reward.eggs ? '#f59e0b' : '#374151',
-                    color: eggBalance >= reward.eggs ? '#000' : '#9ca3af',
-                    border: 'none',
-                    padding: '0.5rem 1rem',
-                    borderRadius: '8px',
-                    fontWeight: 'bold',
-                    cursor: eggBalance >= reward.eggs ? 'pointer' : 'not-allowed',
-                    transition: 'all 0.2s',
-                  }}
-                  disabled={eggBalance < reward.eggs}
+              <div className="egg-glow"></div>
+              <Image 
+                src="/egg.png" 
+                alt="1 Million Egg" 
+                width={280} 
+                height={280} 
+                className="egg-image"
+                priority
+              />
+              {floatingTexts.map(text => (
+                <div 
+                  key={text.id} 
+                  className="floating-text"
+                  style={{ left: `${text.x}%`, top: `${text.y}%` }}
                 >
-                  CLAIM
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Global Stats */}
-      <section className="glass-panel global-stats">
-        <div className="global-info">
-          <h3>Global Score</h3>
-          <div className="global-score">{globalScore.toLocaleString('en-US')}</div>
-          <p>Total taps by all players worldwide</p>
-        </div>
-      </section>
-
-      {/* Leaderboard */}
-      <section className="glass-panel">
-        <div className="leaderboard-header">
-          <div className="title">
-            GLOBAL LEADERBOARD
-          </div>
-          <a href="#" className="top-link">TOP 20 <span>›</span></a>
-        </div>
-        
-        <div className="leaderboard-list">
-          {leaderboard.length === 0 ? (
-            <div style={{ color: '#9ca3af', textAlign: 'center', padding: '10px' }}>
-              No taps yet! Be the first!
-            </div>
-          ) : (
-            leaderboard.map((entry, index) => (
-              <div key={index} className={`leaderboard-item ${entry.player === address ? 'current-user' : ''}`}>
-                <div className="rank-info">
-                  <span className="rank">{index + 1}</span>
-                  <span className="name">{entry.player.slice(0, 6)}...{entry.player.slice(-4)}</span>
+                  +1
                 </div>
-                <div className="score">{Number(entry.score).toLocaleString('en-US')}</div>
-              </div>
-            ))
-          )}
+              ))}
+            </div>
+            
+            <button className="tap-button" onClick={handleTap}>
+              TAP THE EGG <br/> +1 <span style={{fontSize: '24px'}}>🥚</span>
+            </button>
+          </section>
         </div>
-      </section>
+      )}
 
-      <div className="footer-text">
-        Tap. Earn. Climb. <span className="text-gold">🥚</span>
-      </div>
+      {/* --- REWARDS TAB --- */}
+      {activeTab === 'rewards' && (
+        <div className="tab-content fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+          {/* Rewards Section */}
+          <section className="glass-panel">
+            <div className="leaderboard-header">
+              <div className="title text-gold">
+                USDC REWARDS 💰
+              </div>
+            </div>
+            <p style={{ color: '#9ca3af', fontSize: '0.85rem', marginBottom: '1rem', textAlign: 'center' }}>
+              Exchange your collected eggs for real USDC! (Base Network)
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {REWARD_TIERS.map((reward) => (
+                <div key={reward.tier} className="leaderboard-item" style={{ padding: '0.75rem 1rem' }}>
+                  <div className="rank-info" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span className="text-gold" style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>{reward.eggs} 🥚</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <div className="score" style={{ color: '#22c55e' }}>${reward.usdc.toFixed(2)} USDC</div>
+                    <button 
+                      onClick={() => handleClaim(reward.tier)}
+                      style={{
+                        background: eggBalance >= reward.eggs ? '#f59e0b' : '#374151',
+                        color: eggBalance >= reward.eggs ? '#000' : '#9ca3af',
+                        border: 'none',
+                        padding: '0.5rem 1rem',
+                        borderRadius: '8px',
+                        fontWeight: 'bold',
+                        cursor: eggBalance >= reward.eggs ? 'pointer' : 'not-allowed',
+                        transition: 'all 0.2s',
+                      }}
+                      disabled={eggBalance < reward.eggs}
+                    >
+                      CLAIM
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Global Stats */}
+          <section className="glass-panel global-stats">
+            <div className="global-info">
+              <h3>Global Score</h3>
+              <div className="global-score">{globalScore.toLocaleString('en-US')}</div>
+              <p>Total taps by all players worldwide</p>
+            </div>
+          </section>
+
+          {/* Leaderboard */}
+          <section className="glass-panel">
+            <div className="leaderboard-header">
+              <div className="title">
+                GLOBAL LEADERBOARD
+              </div>
+              <a href="#" className="top-link">TOP 20 <span>›</span></a>
+            </div>
+            
+            <div className="leaderboard-list">
+              {leaderboard.length === 0 ? (
+                <div style={{ color: '#9ca3af', textAlign: 'center', padding: '10px' }}>
+                  No taps yet! Be the first!
+                </div>
+              ) : (
+                leaderboard.map((entry, index) => (
+                  <div key={index} className={`leaderboard-item ${entry.player === address ? 'current-user' : ''}`}>
+                    <div className="rank-info">
+                      <span className="rank">{index + 1}</span>
+                      <span className="name">{entry.player.slice(0, 6)}...{entry.player.slice(-4)}</span>
+                    </div>
+                    <div className="score">{Number(entry.score).toLocaleString('en-US')}</div>
+                  </div>
+                ))
+              )}
+            </div>
+          </section>
+        </div>
+      )}
+
+      {/* --- PROFILE TAB --- */}
+      {activeTab === 'profile' && (
+        <div className="tab-content fade-in">
+          <section className="glass-panel" style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '48px', marginBottom: '1rem' }}>👤</div>
+            <h2 style={{ marginBottom: '1rem' }}>My Profile</h2>
+            {!isConnected ? (
+              <p style={{ color: '#9ca3af' }}>Please connect your wallet to view your profile.</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', textAlign: 'left' }}>
+                <div style={{ background: '#22262f', padding: '12px', borderRadius: '8px' }}>
+                  <div style={{ fontSize: '12px', color: '#9ca3af', marginBottom: '4px' }}>Connected Wallet</div>
+                  <div style={{ fontWeight: 'bold' }}>{address}</div>
+                </div>
+                <div style={{ background: '#22262f', padding: '12px', borderRadius: '8px' }}>
+                  <div style={{ fontSize: '12px', color: '#9ca3af', marginBottom: '4px' }}>Lifetime Score</div>
+                  <div style={{ fontWeight: 'bold', color: '#fff', fontSize: '20px' }}>{score.toLocaleString()} taps</div>
+                </div>
+                <div style={{ background: '#22262f', padding: '12px', borderRadius: '8px' }}>
+                  <div style={{ fontSize: '12px', color: '#9ca3af', marginBottom: '4px' }}>Available Eggs</div>
+                  <div style={{ fontWeight: 'bold', color: '#f59e0b', fontSize: '20px' }}>{eggBalance.toLocaleString()} 🥚</div>
+                </div>
+              </div>
+            )}
+          </section>
+        </div>
+      )}
+
+      {/* Bottom Navigation Bar */}
+      <nav className="bottom-nav">
+        <button className={`nav-item ${activeTab === 'home' ? 'active' : ''}`} onClick={() => setActiveTab('home')}>
+          <div className="nav-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          </div>
+          <span>Home</span>
+        </button>
+        <button className={`nav-item ${activeTab === 'rewards' ? 'active' : ''}`} onClick={() => setActiveTab('rewards')}>
+          <div className="nav-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+          </div>
+          <span>Rewards</span>
+        </button>
+        <button className={`nav-item ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => setActiveTab('profile')}>
+          <div className="nav-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <span>Profile</span>
+        </button>
+      </nav>
     </main>
   );
 }

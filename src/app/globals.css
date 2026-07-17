@@ -362,3 +362,65 @@ button {
   align-items: center;
   gap: 6px;
 }
+
+/* Bottom Navigation */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--background);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-around;
+  padding: 12px 16px 24px; /* extra bottom padding for mobile safe area */
+  z-index: 100;
+}
+
+.nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  position: relative;
+  transition: color 0.2s;
+}
+
+.nav-item.active {
+  color: var(--text-primary);
+}
+
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  top: -13px; /* align exactly with the border-top of the nav container */
+  width: 36px;
+  height: 3px;
+  background: var(--text-primary);
+  border-radius: 0 0 4px 4px;
+}
+
+.nav-icon {
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tab-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
