@@ -480,6 +480,18 @@ export default function Home() {
             </button>
 
             <button 
+              onClick={() => {
+                  navigator.clipboard.writeText("https://1-million-egg.vercel.app");
+                  toast.success("Link copied to clipboard!");
+                  setShowShareModal(false);
+              }}
+              style={{ width: '100%', padding: '14px', background: '#1f232b', color: '#fff', border: 'none', borderRadius: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', fontWeight: 'bold' }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+              Copy Link
+            </button>
+
+            <button 
               onClick={() => setShowShareModal(false)}
               style={{ width: '100%', padding: '14px', background: 'transparent', color: '#9ca3af', border: 'none', borderRadius: '12px', fontWeight: 'bold', marginTop: '8px' }}
             >
