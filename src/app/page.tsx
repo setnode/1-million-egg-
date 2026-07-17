@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import Image from 'next/image';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt, useConnect } from 'wagmi';
+import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt, useConnect, useDisconnect } from 'wagmi';
 import { parseEther } from 'viem';
 import toast, { Toaster } from 'react-hot-toast';
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from '@/constants/contract';
@@ -29,9 +29,11 @@ const REWARD_TIERS = [
 export default function Home() {
   const { address, isConnected } = useAccount();
   const { connect } = useConnect();
+  const { disconnect } = useDisconnect();
   const [isClicked, setIsClicked] = useState(false);
   const [floatingTexts, setFloatingTexts] = useState<FloatingText[]>([]);
   const [textIdCounter, setTextIdCounter] = useState(0);
+  const [farcasterUser, setFarcasterUser] = useState<any>(null);
 
   const [activeTab, setActiveTab] = useState<'home' | 'rewards' | 'leaderboard' | 'profile'>('home');
 
@@ -44,6 +46,10 @@ export default function Home() {
 
         // Prompt to Add Mini App if not added
         const context = await sdk.context;
+        if (context?.user) {
+          setFarcasterUser(context.user);
+        }
+        
         if (context?.client) {
           // If we are inside Farcaster, forcefully trigger the connection approval
           // If already approved, it silently connects. If not, Farcaster shows the approval modal.
@@ -337,28 +343,68 @@ export default function Home() {
       {/* --- PROFILE TAB --- */}
       {activeTab === 'profile' && (
         <div className="tab-content fade-in">
-          <section className="glass-panel" style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '48px', marginBottom: '1rem' }}>👤</div>
-            <h2 style={{ marginBottom: '1rem' }}>My Profile</h2>
-            {!isConnected ? (
+          {!isConnected ? (
+            <section className="glass-panel" style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '48px', marginBottom: '1rem' }}>👤</div>
+              <h2 style={{ marginBottom: '1rem' }}>My Profile</h2>
               <p style={{ color: '#9ca3af' }}>Please connect your wallet to view your profile.</p>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', textAlign: 'left' }}>
-                <div style={{ background: '#22262f', padding: '12px', borderRadius: '8px' }}>
-                  <div style={{ fontSize: '12px', color: '#9ca3af', marginBottom: '4px' }}>Connected Wallet</div>
-                  <div style={{ fontWeight: 'bold' }}>{address}</div>
-                </div>
-                <div style={{ background: '#22262f', padding: '12px', borderRadius: '8px' }}>
-                  <div style={{ fontSize: '12px', color: '#9ca3af', marginBottom: '4px' }}>Lifetime Score</div>
-                  <div style={{ fontWeight: 'bold', color: '#fff', fontSize: '20px' }}>{score.toLocaleString()} taps</div>
-                </div>
-                <div style={{ background: '#22262f', padding: '12px', borderRadius: '8px' }}>
-                  <div style={{ fontSize: '12px', color: '#9ca3af', marginBottom: '4px' }}>Available Eggs</div>
-                  <div style={{ fontWeight: 'bold', color: '#f59e0b', fontSize: '20px' }}>{eggBalance.toLocaleString()} 🥚</div>
+            </section>
+          ) : (
+            <div style={{ background: '#0a0a0c', border: '1px solid #1f232b', borderRadius: '16px', padding: '20px', display: 'flex', flexDirection: 'column' }}>
+              {/* Top Row: Avatar & Name */}
+              <div style={{ display: 'flex', gap: '16px', alignItems: 'center', marginBottom: '24px' }}>
+                <img 
+                  src={farcasterUser?.pfpUrl || "https://i.imgur.com/vH1NpwQ.png"} 
+                  alt="Avatar" 
+                  style={{ width: '64px', height: '64px', borderRadius: '16px', objectFit: 'cover', background: '#22262f' }} 
+                />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#fff' }}>
+                    {farcasterUser?.displayName || "Egg Clicker Player"}
+                  </div>
+                  <div style={{ color: '#9ca3af', fontSize: '14px' }}>
+                    @{farcasterUser?.username || "anonymous"}
+                  </div>
                 </div>
               </div>
-            )}
-          </section>
+
+              {/* Middle Row: Wallet Address */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#9ca3af', fontSize: '14px', marginBottom: '32px', background: '#13151a', padding: '12px 16px', borderRadius: '12px' }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 15h0M2 9.5h20"/></svg>
+                <span>{address?.slice(0, 6)}...{address?.slice(-4)}</span>
+              </div>
+
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <button 
+                  onClick={() => {
+                    const text = encodeURIComponent(`I've tapped ${score.toLocaleString()} eggs and earned ${eggBalance.toLocaleString()} 🥚 on 1 Million Egg! Can you beat me?`);
+                    sdk.actions.openUrl(`https://warpcast.com/~/compose?text=${text}`);
+                  }}
+                  style={{ 
+                    width: '100%', padding: '14px', background: 'var(--accent-blue)', color: '#fff', 
+                    borderRadius: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center', 
+                    gap: '8px', fontWeight: 'bold', border: 'none'
+                  }}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+                  Share My Score
+                </button>
+
+                <button 
+                  onClick={() => disconnect()}
+                  style={{ 
+                    width: '100%', padding: '14px', background: 'transparent', border: '1px solid rgba(239, 68, 68, 0.3)', 
+                    color: '#ef4444', borderRadius: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center', 
+                    gap: '8px', fontWeight: 'bold' 
+                  }}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                  Disconnect Wallet
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
