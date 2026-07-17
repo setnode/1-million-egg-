@@ -39,9 +39,6 @@ export default function Home() {
     const initFarcaster = async () => {
       try {
         await sdk.actions.ready();
-        
-        // Auto-connect Wagmi to Farcaster Wallet
-        connect({ connector: farcasterFrame() });
 
         // Prompt to Add Mini App if not added
         const context = await sdk.context;
