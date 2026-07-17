@@ -1,0 +1,18 @@
+{
+  "accountAssociation": {
+    "header": "eyJmaWQiOjg4NzI4MSwidHlwZSI6ImN1c3RvZHkiLCJrZXkiOiIweDdlZGQ2MGM1ZDA0ZTRiMzI5Y2E2MjQzNzI0NTU2NDc3NzZkNjRkZjYifQ",
+    "payload": "eyJkb21haW4iOiJvbmUtbWlsbGlvbi1lZ2ctc2lpejkydXUtY29udGVudGRhcnRzLXByb2plY3RzLnZlcmNlbC5hcHAifQ",
+    "signature": "MHg2ZmFjZmQ5NjQ2MzJkNmI3ZTFmYTFlZWNmZmUwNTE3YmMzOGFlMzlkODFlYTFmNGVmNWJkMDhlNGE2ZTkyZGM1NzViMjc2N2QyNWI5Nzk0NTU1OGQxM2U1MWM3Yzg4ZTIxMmY1MjUzNGVkYzcyNjFlMDIyMDQ2OTQ5ZDY4ZDJmYjFi"
+  },
+  "frame": {
+    "version": "1",
+    "name": "1 Million Egg",
+    "iconUrl": "https://raw.githubusercontent.com/farcasterxyz/protocol/main/docs/assets/farcaster-logo.png",
+    "homeUrl": "https://1-million-egg.vercel.app",
+    "imageUrl": "https://1-million-egg.vercel.app/egg.png",
+    "buttonTitle": "Tap the Egg",
+    "splashImageUrl": "https://1-million-egg.vercel.app/egg.png",
+    "splashBackgroundColor": "#0f1115",
+    "webhookUrl": "https://1-million-egg.vercel.app/api/webhook"
+  }
+}
