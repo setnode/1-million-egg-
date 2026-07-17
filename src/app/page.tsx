@@ -164,7 +164,7 @@ export default function Home() {
   
   // Parse Leaderboard (filter out empty entries)
   const leaderboard = leaderboardData 
-    ? (leaderboardData as { player: string, score: bigint }[]).filter(entry => entry.player !== '0x0000000000000000000000000000000000000000')
+    ? (leaderboardData as any[]).filter(entry => entry.player !== '0x0000000000000000000000000000000000000000')
     : [];
 
   return (
