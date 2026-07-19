@@ -27,9 +27,9 @@ export async function GET(req: NextRequest) {
     // Calculate progress bar width
     const progressPercent = Math.min(100, Math.max(0, (totalEggs / target) * 100));
 
-    // Load the images as ArrayBuffers for Satori
-    const eggImgData = await fetch(new URL('../../../../../public/egg.png', import.meta.url)).then((res) => res.arrayBuffer());
-    const logoImgData = await fetch(new URL('../../../../../public/icon.png', import.meta.url)).then((res) => res.arrayBuffer());
+    // Load the images dynamically to prevent Vercel from bundling heavy assets into the Edge Function (1MB limit)
+    const eggImgData = await fetch(new URL('/egg.png', origin)).then((res) => res.arrayBuffer());
+    const logoImgData = await fetch(new URL('/icon.png', origin)).then((res) => res.arrayBuffer());
 
     return new ImageResponse(
       (
