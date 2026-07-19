@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     siteName: "1 Million Egg",
     images: [
       {
-        url: "https://1millionegg.xyz/og.png",
+        url: "https://1millionegg.xyz/og.png?v=2",
         width: 1200,
         height: 630,
       },
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "1 Million Egg",
     description: "Tap the Egg. Earn Real USDC.",
-    images: ["https://1millionegg.xyz/og.png"],
+    images: ["https://1millionegg.xyz/og.png?v=2"],
   },
   other: {
     "base:app_id": "6a5aa2e9a0fe5cd3aaa83293"
