@@ -895,7 +895,7 @@ export default function Home() {
                         Share on X
                       </a>
                       <a
-                        href={`https://warpcast.com/~/compose?text=${encodeURIComponent("🥚 Tap the Egg. Earn Real USDC on Base.\n\nPlay the 1 Million Egg Mini App now!\n\nhttps://farcaster.xyz/miniapps/0wCsGfEbFiQQ/1-million-egg")}`}
+                        href={`https://warpcast.com/~/compose?text=${encodeURIComponent("🥚 Tap the Egg. Earn Real USDC on Base.\n\nPlay the 1 Million Egg Mini App now!")}&embeds[]=${encodeURIComponent("https://farcaster.xyz/miniapps/0wCsGfEbFiQQ/1-million-egg")}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={() => setShowShareOptions(false)}
