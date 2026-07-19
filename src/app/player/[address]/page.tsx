@@ -22,50 +22,25 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   let target = 1000000;
 
   try {
-    // 1. Fetch from Leaderboard API
-    // Since this runs on the server, we use an absolute URL or just call the service directly.
-    // It's safer to call the Viem public client directly here to avoid absolute URL issues in build time.
-    // Use Alchemy explicitly, failing fast if missing to avoid rate limiting
-    const rpcUrl = process.env.NEXT_PUBLIC_ALCHEMY_URL || process.env.NEXT_PUBLIC_ALCHEMY_RPC_URL;
-    const publicClient = createPublicClient({
-      chain: base,
-      transport: http(rpcUrl)
-    });
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://1millionegg.xyz';
+    const res = await fetch(`${baseUrl}/api/profile?user=${address}`, { next: { revalidate: 60 } });
+    
+    if (res.ok) {
+      const profileData = await res.json();
+      
+      // Console logging the debug info as requested by the user
+      console.log(`[OG Metadata Debug] Data Source for ${address}:`, profileData.dataSource);
+      console.log(`[OG Metadata Debug] JSON Payload:`, JSON.stringify(profileData));
 
-    // Multi-call
-    const data = await publicClient.multicall({
-      contracts: [
-        { address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'scores', args: [address] },
-        { address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'eggBalances', args: [address] },
-        { address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'streakCount', args: [address] },
-        { address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'seasonTarget' },
-        { address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'seasonTotalEggs' },
-      ]
-    });
-
-    taps = data[0].result ? Number(data[0].result) : 0;
-    eggs = data[1].result ? Number(data[1].result) : 0;
-    streak = data[2].result ? Number(data[2].result) : 0;
-    target = data[3].result ? Number(data[3].result) : 1000000;
-    totalEggs = data[4].result ? Number(data[4].result) : 0;
-
-    // We can't easily get the exact rank without the backend leaderboard service, 
-    // but we can try to fetch from the local API if it's available.
-    // However, in Vercel Edge/Serverless, calling localhost isn't always reliable.
-    // Let's fallback rank to "Top 100" or leave it as "-" if fetch fails.
-    try {
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://1millionegg.xyz';
-      const res = await fetch(`${baseUrl}/api/leaderboard?user=${address}`, { next: { revalidate: 60 } });
-      if (res.ok) {
-        const lbData = await res.json();
-        if (lbData?.yourRank?.rank) {
-          rank = String(lbData.yourRank.rank);
-        }
-      }
-    } catch (e) {
-      console.error("Could not fetch leaderboard for metadata", e);
+      eggs = profileData.seasonEggs || 0;
+      rank = String(profileData.rank || '-');
+      streak = profileData.streak || 0;
+      taps = profileData.lifetimeTaps || 0;
+      totalEggs = profileData.seasonTotalEggs || 0;
+      target = profileData.seasonTarget || 1000000;
+    } else {
+      console.error("Profile API returned error:", await res.text());
     }
-
   } catch (error) {
     console.error("Failed to generate metadata for player:", error);
   }

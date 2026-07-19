@@ -125,9 +125,9 @@ export async function GET(req: NextRequest) {
                 {/* Stats Grid (Satori supports flex wrap but explicit rows are safer) */}
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', maxWidth: '500px' }}>
                   
-                  {/* Stat Card: Available Eggs */}
+                  {/* Stat Card: Season Eggs */}
                   <div style={{ display: 'flex', flexDirection: 'column', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '16px', width: '230px' }}>
-                    <span style={{ fontSize: '14px', color: '#F59E0B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px' }}>🥚 Available Eggs</span>
+                    <span style={{ fontSize: '14px', color: '#F59E0B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px' }}>🥚 Season Eggs</span>
                     <span style={{ fontSize: '32px', color: 'white', fontWeight: 800, marginTop: '8px' }}>{Number(eggs).toLocaleString('en-US')}</span>
                   </div>
 
