@@ -7,20 +7,20 @@
   "frame": {
     "name": "1 Million Egg",
     "version": "1",
-    "iconUrl": "https://1-million-egg.vercel.app/icon.png",
-    "homeUrl": "https://1-million-egg.vercel.app",
-    "imageUrl": "https://1-million-egg.vercel.app/image.png",
+    "iconUrl": "https://1millionegg.xyz/icon.png",
+    "homeUrl": "https://1millionegg.xyz",
+    "imageUrl": "https://1millionegg.xyz/image.png",
     "buttonTitle": "Tap the Egg",
-    "splashImageUrl": "https://1-million-egg.vercel.app/splash.png",
+    "splashImageUrl": "https://1millionegg.xyz/splash.png",
     "splashBackgroundColor": "#6200EA",
-    "webhookUrl": "https://1-million-egg.vercel.app/api/webhook",
+    "webhookUrl": "https://1millionegg.xyz/api/webhook",
     "subtitle": "Tap the egg, earn real USDC!",
     "description": "1 Million Egg is a viral clicker game on Base. Tap the egg, climb the Top 20 leaderboard, and claim real USDC rewards directly to your wallet!",
     "primaryCategory": "games",
     "screenshotUrls": [
-      "https://1-million-egg.vercel.app/egg.png"
+      "https://1millionegg.xyz/egg.png"
     ],
-    "heroImageUrl": "https://1-million-egg.vercel.app/egg.png",
+    "heroImageUrl": "https://1millionegg.xyz/egg.png",
     "tags": [
       "clicker",
       "game",
@@ -31,6 +31,6 @@
     "tagline": "Tap the egg, earn real USDC!",
     "ogTitle": "1 Million Egg on Base",
     "ogDescription": "I'm tapping the egg to climb the Top 20 leaderboard and earn USDC on Base. Come join me!",
-    "ogImageUrl": "https://1-million-egg.vercel.app/egg.png"
+    "ogImageUrl": "https://1millionegg.xyz/egg.png"
   }
 }

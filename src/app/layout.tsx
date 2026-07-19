@@ -26,6 +26,21 @@ const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
 });
 
+const frameMetadata = {
+  version: "next",
+  imageUrl: "https://1millionegg.xyz/og.png",
+  button: {
+    title: "Play 1 Million Egg",
+    action: {
+      type: "launch_frame",
+      name: "1 Million Egg",
+      url: "https://1millionegg.xyz/",
+      splashImageUrl: "https://1millionegg.xyz/splash.png",
+      splashBackgroundColor: "#0B0B0F"
+    }
+  }
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL('https://1millionegg.xyz'),
   title: "1 Million Egg",
@@ -52,7 +67,8 @@ export const metadata: Metadata = {
     images: ["https://1millionegg.xyz/og.png?v=2"],
   },
   other: {
-    "base:app_id": "6a5aa2e9a0fe5cd3aaa83293"
+    "base:app_id": "6a5aa2e9a0fe5cd3aaa83293",
+    "fc:frame": JSON.stringify(frameMetadata)
   }
 };
 
