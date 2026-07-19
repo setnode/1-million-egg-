@@ -27,19 +27,19 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://1-million-egg.vercel.app'),
+  metadataBase: new URL('https://1millionegg.xyz'),
   title: "1 Million Egg",
-  description: "Tap the egg. Earn eggs. Claim USDC.",
+  description: "Tap the Egg. Earn Real USDC.",
   openGraph: {
-    title: "1 Million Egg 🥚",
-    description: "Tap the egg. Earn eggs. Climb the leaderboard and claim USDC rewards!",
-    url: "https://1-million-egg.vercel.app",
+    title: "1 Million Egg",
+    description: "Tap the Egg. Earn Real USDC.",
+    url: "https://1millionegg.xyz",
     siteName: "1 Million Egg",
     images: [
       {
-        url: "/egg.png",
-        width: 800,
-        height: 800,
+        url: "https://1millionegg.xyz/og.png",
+        width: 1200,
+        height: 630,
       },
     ],
     locale: "en_US",
@@ -47,9 +47,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "1 Million Egg 🥚",
-    description: "Tap the egg. Earn eggs. Climb the leaderboard and claim USDC rewards!",
-    images: ["/egg.png"],
+    title: "1 Million Egg",
+    description: "Tap the Egg. Earn Real USDC.",
+    images: ["https://1millionegg.xyz/og.png"],
   },
   other: {
     "base:app_id": "6a5aa2e9a0fe5cd3aaa83293"
