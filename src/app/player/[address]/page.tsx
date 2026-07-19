@@ -25,9 +25,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     // 1. Fetch from Leaderboard API
     // Since this runs on the server, we use an absolute URL or just call the service directly.
     // It's safer to call the Viem public client directly here to avoid absolute URL issues in build time.
+    // Use Alchemy explicitly, failing fast if missing to avoid rate limiting
+    const rpcUrl = process.env.NEXT_PUBLIC_ALCHEMY_URL || process.env.NEXT_PUBLIC_ALCHEMY_RPC_URL;
     const publicClient = createPublicClient({
       chain: base,
-      transport: http(process.env.NEXT_PUBLIC_ALCHEMY_URL || 'https://mainnet.base.org')
+      transport: http(rpcUrl)
     });
 
     // Multi-call

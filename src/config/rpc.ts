@@ -14,24 +14,17 @@ const alchemySepoliaUrl = alchemyKey ? `https://base-sepolia.g.alchemy.com/v2/${
 // Export boolean to let backend know if we can use large chunks
 export const isAlchemyActive = !!alchemyKey;
 
-const basePublicRpc = "https://mainnet.base.org"; 
+const basePublicRpc = process.env.NEXT_PUBLIC_ALCHEMY_URL || "https://mainnet.base.org"; // Removed hardcoded reliance, depends on env
 const baseSepoliaPublicRpc = "https://sepolia.base.org";
 
 // Centralized transports configuration for Wagmi
 export const rpcTransports = {
   [base.id]: alchemyMainnetUrl 
-    ? fallback([
-        http(alchemyMainnetUrl, { 
-          retryCount: 2, 
-          timeout: 10000,
-          batch: true // Enable batching to reduce redundant requests
-        }),
-        http(basePublicRpc, { 
-          retryCount: 2, 
-          timeout: 10000,
-          batch: true
-        })
-      ])
+    ? http(alchemyMainnetUrl, { 
+        retryCount: 2, 
+        timeout: 10000,
+        batch: true // Enable batching to reduce redundant requests
+      })
     : http(basePublicRpc, { retryCount: 2, timeout: 10000, batch: true }),
   
   [baseSepolia.id]: alchemySepoliaUrl 

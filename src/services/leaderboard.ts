@@ -50,26 +50,18 @@ const publicClient = createPublicClient({
   transport: getViemTransport(base.id),
 });
 
+let rpcStateCache = {
+  seasonTarget: 1000000n,
+  seasonTotalEggs: 0n,
+  currentBlock: 0n,
+  lastFetched: 0
+};
+
 export class ViemLeaderboardService implements ILeaderboardService {
   async getLeaderboard(seasonStr: string, userAddress?: string): Promise<LeaderboardResponse> {
     const isAllTime = seasonStr === 'all';
     const season = isAllTime ? 0 : parseInt(seasonStr, 10);
     
-    // Fetch global states & block
-    const [seasonTarget, seasonTotalEggs, currentBlock] = await Promise.all([
-      publicClient.readContract({
-        address: CONTRACT_ADDRESS,
-        abi: CONTRACT_ABI,
-        functionName: 'seasonTarget',
-      }) as Promise<bigint>,
-      publicClient.readContract({
-        address: CONTRACT_ADDRESS,
-        abi: CONTRACT_ABI,
-        functionName: 'seasonTotalEggs',
-      }) as Promise<bigint>,
-      publicClient.getBlockNumber()
-    ]);
-
     const seasonKey = seasonStr;
     const redisKey = `leaderboard_mainnet_cache_${season}`;
     const lockKey = `leaderboard_mainnet_lock_${season}`;
@@ -101,6 +93,38 @@ export class ViemLeaderboardService implements ILeaderboardService {
         players = globalCache[seasonKey].players;
       }
     }
+
+    // 3. Fetch global states & block ONLY if cache is older than 15 seconds
+    // This prevents massive rate limit spikes when thousands of users load the API.
+    const now = Date.now();
+    if (now - rpcStateCache.lastFetched > 15000) {
+      try {
+        const [seasonTarget, seasonTotalEggs, currentBlock] = await Promise.all([
+          publicClient.readContract({
+            address: CONTRACT_ADDRESS,
+            abi: CONTRACT_ABI,
+            functionName: 'seasonTarget',
+          }) as Promise<bigint>,
+          publicClient.readContract({
+            address: CONTRACT_ADDRESS,
+            abi: CONTRACT_ABI,
+            functionName: 'seasonTotalEggs',
+          }) as Promise<bigint>,
+          publicClient.getBlockNumber()
+        ]);
+        
+        rpcStateCache = {
+          seasonTarget,
+          seasonTotalEggs,
+          currentBlock,
+          lastFetched: now
+        };
+      } catch (err) {
+        console.error("Failed to fetch RPC state, using stale cache:", err);
+      }
+    }
+
+    const { seasonTarget, seasonTotalEggs, currentBlock } = rpcStateCache;
 
     // 3. Incremental Indexing (if behind)
     if (lastProcessedBlock < currentBlock) {
