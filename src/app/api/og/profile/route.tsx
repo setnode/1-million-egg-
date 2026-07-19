@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
     const eggImgData = await fetch(new URL('/egg.png', origin)).then((res) => res.arrayBuffer());
     const logoImgData = await fetch(new URL('/icon.png', origin)).then((res) => res.arrayBuffer());
 
-    return new ImageResponse(
+    const imageResponse = new ImageResponse(
       (
         <div
           style={{
@@ -216,6 +216,19 @@ export async function GET(req: NextRequest) {
         height: 630,
       }
     );
+
+    // Buffer the streaming ImageResponse to determine Content-Length
+    // Twitterbot requires Content-Length to display the image.
+    const buffer = await imageResponse.arrayBuffer();
+
+    return new Response(buffer, {
+      status: 200,
+      headers: {
+        'Content-Type': 'image/png',
+        'Content-Length': buffer.byteLength.toString(),
+        'Cache-Control': 'public, max-age=31536000, immutable',
+      },
+    });
   } catch (e: any) {
     console.error('Failed to generate OG image', e);
     return new Response(`Failed to generate image`, {
