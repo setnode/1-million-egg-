@@ -5,12 +5,13 @@ import { base } from 'viem/chains';
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from '@/constants/contract';
 
 interface Props {
-  params: {
+  params: Promise<{
     address: string;
-  };
+  }>;
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params;
   const address = params.address as `0x${string}`;
   
   // We need to fetch data for the OG Image
