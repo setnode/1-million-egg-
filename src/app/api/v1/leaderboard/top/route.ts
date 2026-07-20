@@ -21,8 +21,7 @@ export async function GET(request: Request) {
         const tables = await db.execute(sql`
           SELECT table_schema, table_name, table_type 
           FROM information_schema.tables 
-          WHERE table_schema IN ('public', 'ponder', 'base')
-          AND table_type = 'VIEW'
+          WHERE table_name ILIKE '%Player%'
         `);
         return tables;
       }
