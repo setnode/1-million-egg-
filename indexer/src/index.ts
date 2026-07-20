@@ -1,4 +1,5 @@
 import { ponder } from "@/generated";
+import * as schema from "../../ponder.schema";
 
 // Ensure all addresses are lowercase
 const formatId = (address: string) => address.toLowerCase();
@@ -15,56 +16,44 @@ ponder.on("MillionEgg:Tapped", async ({ event, context }) => {
   const eventId = `${txHash}-${logIndex}`;
 
   // 1. Upsert Raw Event (idempotent)
-  await context.db.tapEvent.upsert({
+  await context.db.insert(schema.tapEvent).values({
     id: eventId,
-    create: {
-      blockNumber: event.block.number,
-      blockTimestamp: event.block.timestamp,
-      transactionHash: txHash,
-      logIndex: logIndex,
-      chainId: context.network.chainId,
-      contractAddress: formatId(event.log.address),
-      
-      player: playerId,
-      newScore: newScore,
-      globalScore: globalScore,
-      newEggBalance: newEggBalance,
-    },
-    update: {}
-  });
+    blockNumber: event.block.number,
+    blockTimestamp: event.block.timestamp,
+    transactionHash: txHash,
+    logIndex: logIndex,
+    chainId: context.network.chainId,
+    contractAddress: formatId(event.log.address),
+    player: playerId,
+    newScore: newScore,
+    globalScore: globalScore,
+    newEggBalance: newEggBalance,
+  }).onConflictDoNothing();
 
   // 2. Upsert Player Aggregate
-  const existingPlayer = await context.db.player.findUnique({ id: playerId });
+  const existingPlayer = await context.db.find(schema.player, { id: playerId });
   if (existingPlayer) {
-    await context.db.player.update({
-      id: playerId,
-      data: {
-        lifetimePoints: newScore,
-        lastActive: event.block.timestamp,
-        totalTaps: existingPlayer.totalTaps + 1,
-      }
+    await context.db.update(schema.player, { id: playerId }).set({
+      lifetimePoints: newScore,
+      lastActive: event.block.timestamp,
+      totalTaps: existingPlayer.totalTaps + 1,
     });
   } else {
-    await context.db.player.create({
+    await context.db.insert(schema.player).values({
       id: playerId,
-      data: {
-        lifetimePoints: newScore,
-        lastActive: event.block.timestamp,
-        totalTaps: 1,
-      }
+      lifetimePoints: newScore,
+      lastActive: event.block.timestamp,
+      totalTaps: 1,
     });
   }
 
   // 3. Update Season.totalEggs using globalScore (the contract's global counter)
-  await context.db.season.upsert({
+  await context.db.insert(schema.season).values({
     id: currentSeasonId,
-    create: {
-      target: 0n,
-      totalEggs: globalScore,
-    },
-    update: {
-      totalEggs: globalScore,
-    }
+    target: 0n,
+    totalEggs: globalScore,
+  }).onConflictDoUpdate({
+    totalEggs: globalScore,
   });
 });
 
@@ -74,22 +63,18 @@ ponder.on("MillionEgg:RewardClaimed", async ({ event, context }) => {
   const eventId = `${event.transaction.hash}-${event.log.logIndex}`;
 
   // Upsert Raw Event (idempotent)
-  await context.db.rewardClaim.upsert({
+  await context.db.insert(schema.rewardClaim).values({
     id: eventId,
-    create: {
-      blockNumber: event.block.number,
-      blockTimestamp: event.block.timestamp,
-      transactionHash: event.transaction.hash,
-      logIndex: event.log.logIndex,
-      chainId: context.network.chainId,
-      contractAddress: formatId(event.log.address),
-      
-      player: playerId,
-      usdcAmount: usdcAmount,
-      eggsSpent: eggsSpent,
-    },
-    update: {}
-  });
+    blockNumber: event.block.number,
+    blockTimestamp: event.block.timestamp,
+    transactionHash: event.transaction.hash,
+    logIndex: event.log.logIndex,
+    chainId: context.network.chainId,
+    contractAddress: formatId(event.log.address),
+    player: playerId,
+    usdcAmount: usdcAmount,
+    eggsSpent: eggsSpent,
+  }).onConflictDoNothing();
 });
 
 ponder.on("MillionEgg:DailyClaimed", async ({ event, context }) => {
@@ -98,22 +83,18 @@ ponder.on("MillionEgg:DailyClaimed", async ({ event, context }) => {
   const eventId = `${event.transaction.hash}-${event.log.logIndex}`;
 
   // Upsert Raw Event (idempotent)
-  await context.db.dailyCheckin.upsert({
+  await context.db.insert(schema.dailyCheckin).values({
     id: eventId,
-    create: {
-      blockNumber: event.block.number,
-      blockTimestamp: event.block.timestamp,
-      transactionHash: event.transaction.hash,
-      logIndex: event.log.logIndex,
-      chainId: context.network.chainId,
-      contractAddress: formatId(event.log.address),
-      
-      player: playerId,
-      streak: currentStreak,
-      eggsGiven: eggsGiven,
-    },
-    update: {}
-  });
+    blockNumber: event.block.number,
+    blockTimestamp: event.block.timestamp,
+    transactionHash: event.transaction.hash,
+    logIndex: event.log.logIndex,
+    chainId: context.network.chainId,
+    contractAddress: formatId(event.log.address),
+    player: playerId,
+    streak: currentStreak,
+    eggsGiven: eggsGiven,
+  }).onConflictDoNothing();
 });
 
 ponder.on("MillionEgg:SeasonEggsUpdated", async ({ event, context }) => {
@@ -123,16 +104,13 @@ ponder.on("MillionEgg:SeasonEggsUpdated", async ({ event, context }) => {
   const seasonPlayerId = `${playerId}-${seasonId}`;
 
   // Update SeasonPlayer Aggregate
-  await context.db.seasonPlayer.upsert({
+  await context.db.insert(schema.seasonPlayer).values({
     id: seasonPlayerId,
-    create: {
-      address: playerId,
-      seasonId: seasonId,
-      seasonEggs: newBalance,
-    },
-    update: {
-      seasonEggs: newBalance,
-    }
+    address: playerId,
+    seasonId: seasonId,
+    seasonEggs: newBalance,
+  }).onConflictDoUpdate({
+    seasonEggs: newBalance,
   });
 });
 
@@ -140,15 +118,12 @@ ponder.on("MillionEgg:SeasonTargetUpdated", async ({ event, context }) => {
   const { newTarget } = event.args;
   
   // FIX 13: Use currentSeasonId instead of hardcoded 0
-  await context.db.season.upsert({
+  await context.db.insert(schema.season).values({
     id: currentSeasonId,
-    create: {
-      target: newTarget,
-      totalEggs: 0n,
-    },
-    update: {
-      target: newTarget,
-    }
+    target: newTarget,
+    totalEggs: 0n,
+  }).onConflictDoUpdate({
+    target: newTarget,
   });
 });
 
@@ -161,14 +136,11 @@ ponder.on("MillionEgg:SeasonChanged", async ({ event, context }) => {
   currentSeasonId = newSeasonId;
 
   // Create new season entry
-  await context.db.season.upsert({
+  await context.db.insert(schema.season).values({
     id: newSeasonId,
-    create: {
-      target: 0n, // Will be set by SeasonTargetUpdated
-      totalEggs: 0n,
-    },
-    update: {} // If already exists, don't overwrite
-  });
+    target: 0n, // Will be set by SeasonTargetUpdated
+    totalEggs: 0n,
+  }).onConflictDoNothing();
 });
 
 // FIX 12: StreakRestored event handler
@@ -177,13 +149,10 @@ ponder.on("MillionEgg:StreakRestored", async ({ event, context }) => {
   const playerId = formatId(player);
 
   // Update player's last active timestamp when streak is restored
-  const existingPlayer = await context.db.player.findUnique({ id: playerId });
+  const existingPlayer = await context.db.find(schema.player, { id: playerId });
   if (existingPlayer) {
-    await context.db.player.update({
-      id: playerId,
-      data: {
-        lastActive: event.block.timestamp,
-      }
+    await context.db.update(schema.player, { id: playerId }).set({
+      lastActive: event.block.timestamp,
     });
   }
 });
