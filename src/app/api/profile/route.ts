@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server';
-import { ViemLeaderboardService } from '@/services/leaderboard';
+import { db } from '@/services/db';
+import { sql } from 'drizzle-orm';
 import { createPublicClient, http } from 'viem';
 import { base } from 'viem/chains';
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from '@/constants/contract';
 
 export const dynamic = "force-dynamic";
-
-const leaderboardService = new ViemLeaderboardService();
 
 export async function GET(request: Request) {
   try {
@@ -17,15 +16,40 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "User address is required" }, { status: 400 });
     }
 
-    const address = user as `0x${string}`;
+    const address = user.toLowerCase() as `0x${string}`;
 
-    // 1. Fetch from Leaderboard (Redis/Indexer cache)
-    // This provides Rank, Season Eggs, Lifetime Taps, Target, Total Eggs without hitting RPC directly (cached)
-    const lbData = await leaderboardService.getLeaderboard('0', address);
-    
+    // 1. Fetch from Drizzle DB (Fast Leaderboard Index)
+    let dbPlayer: any = { seasonEggs: 0, lifetimePoints: 0, seasonRank: 0 };
+    let dbSeason: any = { totalEggs: 0, target: 1000000 };
+    let totalPlayers = 0;
+
+    if (db) {
+      const [playerRes, seasonRes, statsRes] = await Promise.all([
+        db.execute(sql`
+          WITH UserStats AS (
+            SELECT p.id, p."lifetimePoints", sp."seasonEggs"
+            FROM "Player" p
+            LEFT JOIN "SeasonPlayer" sp ON sp.address = p.id
+            WHERE p.id = ${address}
+          ),
+          SeasonRank AS (
+            SELECT COUNT(*) + 1 as rank
+            FROM "SeasonPlayer"
+            WHERE "seasonEggs" > (SELECT COALESCE("seasonEggs", 0) FROM UserStats)
+          )
+          SELECT u.*, (SELECT rank FROM SeasonRank) as "seasonRank" FROM UserStats u;
+        `),
+        db.execute(sql`SELECT "target", "totalEggs" FROM "Season" WHERE id = 0`),
+        db.execute(sql`SELECT COUNT(*) as "total" FROM "Player"`)
+      ]);
+
+      if (playerRes.length > 0) dbPlayer = playerRes[0];
+      if (seasonRes.length > 0) dbSeason = seasonRes[0];
+      if (statsRes.length > 0) totalPlayers = Number(statsRes[0].total);
+    }
+
     // 2. Fetch the remaining exact stats that Dashboard uses but Leaderboard doesn't index (Streak)
-    // We use the same Alchemy RPC logic
-    const rpcUrl = process.env.NEXT_PUBLIC_ALCHEMY_URL || process.env.NEXT_PUBLIC_ALCHEMY_RPC_URL;
+    const rpcUrl = process.env.NEXT_PUBLIC_ALCHEMY_URL || process.env.NEXT_PUBLIC_ALCHEMY_RPC_URL || "https://mainnet.base.org";
     const publicClient = createPublicClient({
       chain: base,
       transport: http(rpcUrl)
@@ -41,13 +65,13 @@ export async function GET(request: Request) {
     // Compile Unified Profile Model
     const profileData = {
       address,
-      seasonEggs: lbData.yourRank?.seasonEggs || 0,
-      rank: lbData.yourRank?.rank || lbData.totalPlayers + 1,
-      lifetimeTaps: lbData.yourRank?.lifetimePoints || 0,
+      seasonEggs: dbPlayer.seasonEggs || 0,
+      rank: dbPlayer.seasonRank || totalPlayers + 1,
+      lifetimeTaps: dbPlayer.lifetimePoints || 0,
       streak: Number(streakCount),
-      seasonTotalEggs: lbData.seasonTotalEggs,
-      seasonTarget: lbData.seasonTarget,
-      dataSource: "Unified Profile API (Leaderboard Cache + Viem Streak)"
+      seasonTotalEggs: Number(dbSeason.totalEggs || 0),
+      seasonTarget: Number(dbSeason.target || 1000000),
+      dataSource: "Unified Profile API (Drizzle + Viem Streak)"
     };
 
     return NextResponse.json(profileData);
