@@ -95,7 +95,7 @@ export async function getPonderPrefix(): Promise<string> {
       const prefix = t.tablename.replace('SeasonPlayer', '');
       cachedPrefix = prefix;
       lastFetchTime = now;
-      return cachedPrefix;
+      return prefix;
     }
 
     cachedPrefix = "ponder.";
