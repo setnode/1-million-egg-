@@ -21,9 +21,23 @@ export async function getPonderPrefix(): Promise<string> {
     if (metaRes.length > 0 && metaRes[0].value) {
       const val = metaRes[0].value as any;
       if (val.instance_id) {
-        cachedPrefix = `${val.instance_id}__`;
-        lastFetchTime = now;
-        return cachedPrefix;
+        const prefix = `${val.instance_id}__`;
+        // Verify table actually exists (protect against ghost/failed Ponder deployments)
+        const checkRes = await db.execute(sql.raw(`
+          SELECT EXISTS (
+            SELECT FROM information_schema.tables 
+            WHERE table_schema = 'public' 
+            AND table_name = '${prefix}Player'
+          ) as "exists"
+        `));
+        
+        if (checkRes[0] && (checkRes[0] as any).exists) {
+          cachedPrefix = prefix;
+          lastFetchTime = now;
+          return cachedPrefix;
+        } else {
+          console.warn(`Ponder live instance ${prefix} has no tables. Falling back...`);
+        }
       }
     }
   } catch (e) {
@@ -36,21 +50,45 @@ export async function getPonderPrefix(): Promise<string> {
       SELECT value FROM _ponder_meta WHERE key LIKE 'app_%'
     `);
     
-    let maxHeartbeat = 0;
-    let latestInstance = '';
-    
+    const instances = [];
     for (const row of fallbackRes) {
        const val = row.value as any;
-       if (val && val.heartbeat_at > maxHeartbeat) {
-         maxHeartbeat = val.heartbeat_at;
-         latestInstance = val.instance_id;
+       if (val && val.instance_id) {
+         instances.push({
+           id: val.instance_id,
+           heartbeat: val.heartbeat_at || 0
+         });
        }
     }
-    if (latestInstance) {
-      cachedPrefix = `${latestInstance}__`;
-      lastFetchTime = now;
-      return cachedPrefix;
+    
+    // Sort by newest heartbeat first
+    instances.sort((a, b) => b.heartbeat - a.heartbeat);
+    
+    for (const inst of instances) {
+      const prefix = `${inst.id}__`;
+      const checkRes = await db.execute(sql.raw(`
+        SELECT EXISTS (
+          SELECT FROM information_schema.tables 
+          WHERE table_schema = 'public' 
+          AND table_name = '${prefix}Player'
+        ) as "exists"
+      `));
+      
+      if (checkRes[0] && (checkRes[0] as any).exists) {
+        cachedPrefix = prefix;
+        lastFetchTime = now;
+        return cachedPrefix;
+      }
     }
+    
+    // If absolutely nothing is found, return the old hardcoded default or latest anyway
+    if (instances.length > 0) {
+      cachedPrefix = `${instances[0].id}__`;
+    } else {
+      cachedPrefix = "ponder.";
+    }
+    lastFetchTime = now;
+    return cachedPrefix;
   } catch (e) {
     console.error("Failed to fetch fallback ponder prefix:", e);
   }
