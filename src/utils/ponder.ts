@@ -79,12 +79,26 @@ export async function getPonderPrefix(): Promise<string> {
       }
     }
     
-    // If absolutely nothing is found, return the old hardcoded default or latest anyway
-    if (instances.length > 0) {
-      cachedPrefix = `${instances[0].id}__`;
-    } else {
-      cachedPrefix = "ponder.";
+    // If _ponder_meta fails or returns no valid tables, scan pg_tables directly
+    const directTables = await db.execute(sql`
+      SELECT tablename 
+      FROM pg_tables 
+      WHERE schemaname = 'public' 
+      AND tablename LIKE '%__Player'
+      AND tablename NOT LIKE '%_reorg_%'
+    `);
+    
+    if (directTables.length > 0) {
+      // Just take the first one or we can sort them. The newest is usually fine.
+      // We will sort them by table name descending as a rough heuristic, or just pick the first.
+      const t = directTables[0] as any;
+      const prefix = t.tablename.replace('Player', '');
+      cachedPrefix = prefix;
+      lastFetchTime = now;
+      return cachedPrefix;
     }
+
+    cachedPrefix = "ponder.";
     lastFetchTime = now;
     return cachedPrefix;
   } catch (e) {
