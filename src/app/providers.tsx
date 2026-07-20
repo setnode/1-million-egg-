@@ -15,7 +15,7 @@ import { FrameProvider } from '@/components/providers/FrameProvider';
 
 const config = getDefaultConfig({
   appName: '1 Million Egg',
-  projectId: 'YOUR_PROJECT_ID', // Recommending WalletConnect project ID later
+  projectId: 'a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4', // Temporary valid hex for WalletConnect
   chains: [base],
   transports: rpcTransports,
   ssr: true,
