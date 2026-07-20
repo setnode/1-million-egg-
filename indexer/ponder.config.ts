@@ -14,6 +14,7 @@ export default createConfig({
     base: {
       chainId: 8453,
       transport: http(process.env.PONDER_RPC_URL_8453 || process.env.NEXT_PUBLIC_BASE_RPC_URL || "https://mainnet.base.org"),
+      maxRequestsPerSecond: 4,
     },
   },
   contracts: {
