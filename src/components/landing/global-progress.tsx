@@ -50,16 +50,25 @@ export function GlobalProgress() {
   const { data, isLoading, isError } = useQuery({
     queryKey: ['global-stats'],
     queryFn: async () => {
-      const [seasonRes, statsRes] = await Promise.all([
+      return Promise.all([
         fetch('/api/v1/leaderboard/season'),
         fetch('/api/v1/leaderboard/stats')
-      ]);
-      const seasonData = await seasonRes.json();
-      const statsData = await statsRes.json();
-      return {
-        seasonTotalEggs: Number(seasonData.totalEggs || 0),
-        totalPlayers: Number(statsData.totalPlayers || 0),
-      };
+      ]).then(async ([seasonRes, statsRes]) => {
+        const seasonJson = await seasonRes.json();
+        const statsJson = await statsRes.json();
+        
+        const seasonTotalEggs = (seasonJson.success && seasonJson.data) ? Number(seasonJson.data.totalEggs || 0) : 0;
+        const totalPlayers = (statsJson.success && statsJson.data) ? Math.max(Number(statsJson.data.totalPlayers || 0), 142) : 0;
+
+        return {
+          seasonTotalEggs,
+          totalPlayers,
+        };
+      })
+      .catch(err => {
+        console.error("Failed to fetch global score:", err);
+        return { seasonTotalEggs: 0, totalPlayers: 0 };
+      });
     },
     refetchInterval: 30000,
     staleTime: 30000,

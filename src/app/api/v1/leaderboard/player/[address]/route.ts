@@ -15,10 +15,7 @@ export async function GET(
 
     // Validate Ethereum address format
     if (!/^0x[a-f0-9]{40}$/.test(address)) {
-      return NextResponse.json(
-        { error: "Invalid Ethereum address" },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: "Invalid Ethereum address format" }, { status: 400 });
     }
     const cacheKey = `v1:leaderboard:player:${address}`;
     
@@ -64,9 +61,12 @@ export async function GET(
       return result[0];
     });
 
-    return NextResponse.json(data);
+    return NextResponse.json({ success: true, data });
   } catch (error: unknown) {
-    console.error("Leaderboard Player API Error:", error);
-    return NextResponse.json({ error: "Failed to fetch player data" }, { status: 500 });
+    console.error("Player Stats API Error:", error);
+    return NextResponse.json(
+      { success: false, error: error instanceof Error ? error.message : String(error) },
+      { status: 500 }
+    );
   }
 }

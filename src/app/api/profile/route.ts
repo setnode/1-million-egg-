@@ -74,9 +74,9 @@ export async function GET(request: Request) {
       dataSource: "Unified Profile API (Drizzle + Viem Streak)"
     };
 
-    return NextResponse.json(profileData);
+    return NextResponse.json({ success: true, data: profileData });
   } catch (error: unknown) {
     console.error("Profile API Error:", error);
-    return NextResponse.json({ error: "Failed to fetch profile" }, { status: 500 });
+    return NextResponse.json({ success: false, error: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }
 }

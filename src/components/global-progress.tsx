@@ -47,14 +47,14 @@ export function GlobalProgress() {
       fetch('/api/v1/leaderboard/stats')
     ])
       .then(async ([seasonRes, statsRes]) => {
-        const seasonData = await seasonRes.json();
-        const statsData = await statsRes.json();
+        const seasonJson = await seasonRes.json();
+        const statsJson = await statsRes.json();
         
-        if (seasonData && typeof seasonData.totalEggs !== 'undefined') {
-          setCurrentEggs(Number(seasonData.totalEggs));
+        if (seasonJson.success && seasonJson.data && typeof seasonJson.data.totalEggs !== 'undefined') {
+          setCurrentEggs(Number(seasonJson.data.totalEggs));
         }
-        if (statsData && typeof statsData.totalPlayers !== 'undefined') {
-          setCollectorsCount(Math.max(Number(statsData.totalPlayers), 142));
+        if (statsJson.success && statsJson.data && typeof statsJson.data.totalPlayers !== 'undefined') {
+          setCollectorsCount(Math.max(Number(statsJson.data.totalPlayers), 142));
         }
       })
       .catch(err => console.error("Failed to fetch global score:", err));

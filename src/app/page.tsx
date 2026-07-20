@@ -132,10 +132,21 @@ export default function Home() {
         address ? fetch(`/api/v1/leaderboard/player/${address}`) : Promise.resolve(null)
       ]);
 
-      const topPlayers = await topRes.json();
-      const stats = await statsRes.json();
-      const seasonData = await seasonRes.json();
-      const playerInfo = playerRes ? await playerRes.json() : null;
+      const topJson = await topRes.json();
+      const statsJson = await statsRes.json();
+      const seasonJson = await seasonRes.json();
+      const playerJson = playerRes ? await playerRes.json() : null;
+
+      // Hata kontrolü: Standart API formatına göre success=false ise hatayı fırlat
+      if (!topJson.success || !Array.isArray(topJson.data)) {
+        console.error("API error for top:", topJson);
+        throw new Error(topJson.error || "Leaderboard yüklenirken beklenmeyen bir format döndü.");
+      }
+
+      const topPlayers = topJson.data;
+      const stats = statsJson.success ? statsJson.data : {};
+      const seasonData = seasonJson.success ? seasonJson.data : {};
+      const playerInfo = playerJson?.success ? playerJson.data : null;
 
       // Transform back to expected legacy format for UI compatibility
       return {

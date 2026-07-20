@@ -23,9 +23,9 @@ export async function GET() {
       return result[0];
     });
 
-    return NextResponse.json(data);
+    return NextResponse.json({ success: true, data });
   } catch (error: unknown) {
     console.error("Leaderboard Stats API Error:", error);
-    return NextResponse.json({ error: "Failed to fetch stats" }, { status: 500 });
+    return NextResponse.json({ success: false, error: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }
 }

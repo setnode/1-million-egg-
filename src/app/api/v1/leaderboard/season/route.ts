@@ -25,11 +25,11 @@ export async function GET() {
       return result[0];
     });
 
-    return NextResponse.json(data);
+    return NextResponse.json({ success: true, data });
   } catch (error: unknown) {
     console.error("Season API Error:", error);
     return NextResponse.json(
-      { error: "Failed to fetch season data" },
+      { success: false, error: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }
