@@ -19,9 +19,7 @@ export async function GET(request: Request) {
 
       if (type === 'debug_tables') {
         const tables = await db.execute(sql`
-          SELECT table_schema, table_name, table_type 
-          FROM information_schema.tables 
-          WHERE table_name ILIKE '%Player%'
+          SELECT * FROM _ponder_meta
         `);
         return tables;
       }
