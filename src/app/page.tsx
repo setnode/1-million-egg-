@@ -48,13 +48,10 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<'home' | 'rewards' | 'leaderboard' | 'profile'>('home');
   const [confirmClaimTier, setConfirmClaimTier] = useState<number | null>(null);
 
-  // Notify Farcaster Frame v2 that the app has finished loading to dismiss the splash screen
   // Auto-connect Farcaster wallet, and prompt to add Frame
   useEffect(() => {
     const initFarcaster = async () => {
       try {
-        await sdk.actions.ready();
-
         // Prompt to Add Mini App if not added
         const context = await sdk.context;
         if (context?.user) {

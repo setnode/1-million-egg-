@@ -11,6 +11,7 @@ import { base } from 'wagmi/chains';
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
 import { rpcTransports } from '@/config/rpc';
 import { ReactNode } from 'react';
+import { FrameProvider } from '@/components/providers/FrameProvider';
 
 const config = getDefaultConfig({
   appName: '1 Million Egg',
@@ -32,7 +33,9 @@ export function Providers({ children }: { children: ReactNode }) {
           borderRadius: 'large',
           fontStack: 'system',
         })}>
-          {children}
+          <FrameProvider>
+            {children}
+          </FrameProvider>
         </RainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
