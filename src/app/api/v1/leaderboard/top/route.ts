@@ -20,6 +20,15 @@ export async function GET(request: Request) {
 
       const prefix = await getPonderPrefix();
       
+      if (type === 'debug_tables') {
+        const tables = await db.execute(sql`
+          SELECT tablename
+          FROM pg_tables
+          WHERE schemaname = 'public'
+        `);
+        return tables;
+      }
+      
       if (type === 'all') {
         const result = await db.execute(sql.raw(`
           SELECT 
