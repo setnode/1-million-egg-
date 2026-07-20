@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/services/db';
 import { sql } from 'drizzle-orm';
 import { withCache } from '@/services/redis';
+import { getPonderPrefix } from "@/utils/ponder";
 
 export const dynamic = "force-dynamic";
 
@@ -12,13 +13,14 @@ export async function GET() {
     const data = await withCache(cacheKey, 60, async () => {
       if (!db) throw new Error("Database not configured");
 
-      const result = await db.execute(sql`
+      const prefix = await getPonderPrefix();
+      const result = await db.execute(sql.raw(`
         SELECT 
           COUNT(*) as "totalPlayers",
-          SUM(lifetime_points) as "globalPoints",
-          SUM(total_taps) as "globalTaps"
-        FROM ponder.player
-      `);
+          SUM("lifetimePoints") as "globalPoints",
+          SUM("totalTaps") as "globalTaps"
+        FROM "${prefix}Player"
+      `));
 
       return result[0];
     });

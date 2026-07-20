@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/services/db';
 import { sql } from 'drizzle-orm';
+import { getPonderPrefix } from "@/utils/ponder";
 import { createPublicClient, http } from 'viem';
 import { base } from 'viem/chains';
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from '@/constants/contract';
@@ -23,25 +24,26 @@ export async function GET(request: Request) {
     let dbSeason: any = { totalEggs: 0, target: 1000000 };
     let totalPlayers = 0;
 
-    if (db) {
-      const [playerRes, seasonRes, statsRes] = await Promise.all([
-        db.execute(sql`
-          WITH UserStats AS (
-            SELECT p.id, p.lifetime_points as "lifetimePoints", sp.season_eggs as "seasonEggs"
-            FROM ponder.player p
-            LEFT JOIN ponder.season_player sp ON sp.address = p.id
-            WHERE p.id = ${address}
-          ),
-          SeasonRank AS (
-            SELECT COUNT(*) + 1 as rank
-            FROM ponder.season_player
-            WHERE season_eggs > (SELECT COALESCE("seasonEggs", 0) FROM UserStats)
-          )
-          SELECT u.*, (SELECT rank FROM SeasonRank) as "seasonRank" FROM UserStats u;
-        `),
-        db.execute(sql`SELECT target, total_eggs as "totalEggs" FROM ponder.season ORDER BY id DESC LIMIT 1`),
-        db.execute(sql`SELECT COUNT(*) as "total" FROM ponder.player`)
-      ]);
+      if (db) {
+        const prefix = await getPonderPrefix();
+        const [playerRes, seasonRes, statsRes] = await Promise.all([
+          db.execute(sql.raw(`
+            WITH UserStats AS (
+              SELECT p.id, p."lifetimePoints", sp."seasonEggs"
+              FROM "${prefix}Player" p
+              LEFT JOIN "${prefix}SeasonPlayer" sp ON sp.address = p.id
+              WHERE p.id = '${address}'
+            ),
+            SeasonRank AS (
+              SELECT COUNT(*) + 1 as rank
+              FROM "${prefix}SeasonPlayer"
+              WHERE "seasonEggs" > (SELECT COALESCE("seasonEggs", 0) FROM UserStats)
+            )
+            SELECT u.*, (SELECT rank FROM SeasonRank) as "seasonRank" FROM UserStats u;
+          `)),
+          db.execute(sql.raw(`SELECT target, "totalEggs" FROM "${prefix}Season" ORDER BY id DESC LIMIT 1`)),
+          db.execute(sql.raw(`SELECT COUNT(*) as "total" FROM "${prefix}Player"`))
+        ]);
 
       if (playerRes.length > 0) dbPlayer = playerRes[0];
       if (seasonRes.length > 0) dbSeason = seasonRes[0];

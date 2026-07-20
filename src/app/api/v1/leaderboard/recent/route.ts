@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/services/db';
 import { sql } from 'drizzle-orm';
 import { withCache } from '@/services/redis';
+import { getPonderPrefix } from "@/utils/ponder";
 
 export const dynamic = "force-dynamic";
 
@@ -12,15 +13,16 @@ export async function GET() {
     const data = await withCache(cacheKey, 10, async () => {
       if (!db) throw new Error("Database not configured");
 
-      const result = await db.execute(sql`
+      const prefix = await getPonderPrefix();
+      const result = await db.execute(sql.raw(`
         SELECT 
           player as address, 
-          new_score as "newScore",
-          block_timestamp as timestamp
-        FROM ponder.tap_event
-        ORDER BY block_timestamp DESC, log_index DESC
+          "newScore",
+          "blockTimestamp" as timestamp
+        FROM "${prefix}TapEvent"
+        ORDER BY "blockTimestamp" DESC, "logIndex" DESC
         LIMIT 50
-      `);
+      `));
 
       return result;
     });

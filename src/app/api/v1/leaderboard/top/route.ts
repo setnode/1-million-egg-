@@ -3,6 +3,7 @@ import { db } from '@/services/db';
 import { player } from '@/services/db/schema';
 import { desc, sql } from 'drizzle-orm';
 import { withCache } from '@/services/redis';
+import { getPonderPrefix } from "@/utils/ponder";
 
 export const dynamic = "force-dynamic";
 
@@ -17,38 +18,32 @@ export async function GET(request: Request) {
     const data = await withCache(cacheKey, 30, async () => {
       if (!db) throw new Error("Database not configured");
 
-      if (type === 'debug_tables') {
-        const tables = await db.execute(sql`
-          SELECT column_name 
-          FROM information_schema.columns 
-          WHERE table_name = 'b56e__SeasonPlayer'
-        `);
-        return tables;
-      }
+      const prefix = await getPonderPrefix();
+      
       if (type === 'all') {
-        const result = await db.execute(sql`
+        const result = await db.execute(sql.raw(`
           SELECT 
             id as address, 
-            lifetime_points as "lifetimePoints", 
-            total_taps as "totalTaps",
-            RANK() OVER (ORDER BY lifetime_points DESC) as rank
-          FROM ponder.player
-          ORDER BY lifetime_points DESC
+            "lifetimePoints", 
+            "totalTaps",
+            RANK() OVER (ORDER BY "lifetimePoints" DESC) as rank
+          FROM "${prefix}Player"
+          ORDER BY "lifetimePoints" DESC
           LIMIT 100
-        `);
+        `));
         return result;
       } else {
-        const result = await db.execute(sql`
+        const result = await db.execute(sql.raw(`
           SELECT 
             sp.address, 
-            sp.season_eggs as "seasonEggs", 
-            p.lifetime_points as "lifetimePoints",
-            RANK() OVER (ORDER BY sp.season_eggs DESC) as rank
-          FROM ponder.season_player sp
-          LEFT JOIN ponder.player p ON p.id = sp.address
-          ORDER BY sp.season_eggs DESC
+            sp."seasonEggs", 
+            p."lifetimePoints",
+            RANK() OVER (ORDER BY sp."seasonEggs" DESC) as rank
+          FROM "${prefix}SeasonPlayer" sp
+          LEFT JOIN "${prefix}Player" p ON p.id = sp.address
+          ORDER BY sp."seasonEggs" DESC
           LIMIT 100
-        `);
+        `));
         return result;
       }
     });

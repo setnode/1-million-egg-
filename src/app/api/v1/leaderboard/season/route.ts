@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/services/db';
 import { sql } from 'drizzle-orm';
 import { withCache } from '@/services/redis';
+import { getPonderPrefix } from "@/utils/ponder";
 
 export const dynamic = "force-dynamic";
 
@@ -12,12 +13,13 @@ export async function GET() {
     const data = await withCache(cacheKey, 30, async () => {
       if (!db) throw new Error("Database not configured");
 
-      const result = await db.execute(sql`
-        SELECT id, target, total_eggs as "totalEggs"
-        FROM ponder.season
+      const prefix = await getPonderPrefix();
+      const result = await db.execute(sql.raw(`
+        SELECT id, target, "totalEggs"
+        FROM "${prefix}Season"
         ORDER BY id DESC
         LIMIT 1
-      `);
+      `));
 
       if (result.length === 0) {
         return { id: 0, target: 1000000, totalEggs: 0 };

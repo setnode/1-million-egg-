@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/services/db';
 import { sql } from 'drizzle-orm';
 import { withCache } from '@/services/redis';
+import { getPonderPrefix } from "@/utils/ponder";
 
 export const dynamic = "force-dynamic";
 
@@ -22,32 +23,33 @@ export async function GET(
     const data = await withCache(cacheKey, 15, async () => {
       if (!db) throw new Error("Database not configured");
 
+      const prefix = await getPonderPrefix();
       // We need rank for season and all-time, plus total stats
-      const result = await db.execute(sql`
+      const result = await db.execute(sql.raw(`
         WITH PlayerStats AS (
-          SELECT id, lifetime_points as "lifetimePoints", last_active as "lastActive", total_taps as "totalTaps"
-          FROM ponder.player
-          WHERE id = ${address}
+          SELECT id, "lifetimePoints", "lastActive", "totalTaps"
+          FROM "${prefix}Player"
+          WHERE id = '${address}'
         ),
         SeasonStats AS (
-          SELECT season_eggs as "seasonEggs", season_id as "seasonId"
-          FROM ponder.season_player
-          WHERE address = ${address}
-          ORDER BY season_id DESC
+          SELECT "seasonEggs", "seasonId"
+          FROM "${prefix}SeasonPlayer"
+          WHERE address = '${address}'
+          ORDER BY "seasonId" DESC
           LIMIT 1
         ),
         AllTimeRank AS (
           SELECT rank FROM (
-            SELECT id, RANK() OVER (ORDER BY lifetime_points DESC) as rank
-            FROM ponder.player
-          ) ranks WHERE id = ${address}
+            SELECT id, RANK() OVER (ORDER BY "lifetimePoints" DESC) as rank
+            FROM "${prefix}Player"
+          ) ranks WHERE id = '${address}'
         ),
         SeasonRank AS (
           SELECT rank FROM (
-            SELECT address, RANK() OVER (ORDER BY season_eggs DESC) as rank
-            FROM ponder.season_player
-            WHERE season_id = (SELECT COALESCE(MAX(season_id), 0) FROM ponder.season_player WHERE address = ${address})
-          ) ranks WHERE address = ${address}
+            SELECT address, RANK() OVER (ORDER BY "seasonEggs" DESC) as rank
+            FROM "${prefix}SeasonPlayer"
+            WHERE "seasonId" = (SELECT COALESCE(MAX("seasonId"), 0) FROM "${prefix}SeasonPlayer" WHERE address = '${address}')
+          ) ranks WHERE address = '${address}'
         )
         SELECT 
           ps.id,
@@ -62,7 +64,7 @@ export async function GET(
         LEFT JOIN SeasonStats ss ON true
         LEFT JOIN AllTimeRank ar ON true
         LEFT JOIN SeasonRank sr ON true
-      `);
+      `));
 
       if (result.length === 0) {
         return {
