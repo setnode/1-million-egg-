@@ -18,10 +18,13 @@ export async function getPonderPrefix(): Promise<string> {
       SELECT value FROM _ponder_meta WHERE key = 'live'
     `);
     
-    if (metaRes.length > 0 && metaRes[0].value && metaRes[0].value.instance_id) {
-      cachedPrefix = `${metaRes[0].value.instance_id}__`;
-      lastFetchTime = now;
-      return cachedPrefix;
+    if (metaRes.length > 0 && metaRes[0].value) {
+      const val = metaRes[0].value as any;
+      if (val.instance_id) {
+        cachedPrefix = `${val.instance_id}__`;
+        lastFetchTime = now;
+        return cachedPrefix;
+      }
     }
   } catch (e) {
     console.error("Failed to fetch ponder live prefix:", e);
@@ -37,7 +40,7 @@ export async function getPonderPrefix(): Promise<string> {
     let latestInstance = '';
     
     for (const row of fallbackRes) {
-       const val = row.value;
+       const val = row.value as any;
        if (val && val.heartbeat_at > maxHeartbeat) {
          maxHeartbeat = val.heartbeat_at;
          latestInstance = val.instance_id;
