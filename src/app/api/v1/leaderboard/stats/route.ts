@@ -15,9 +15,9 @@ export async function GET() {
       const result = await db.execute(sql`
         SELECT 
           COUNT(*) as "totalPlayers",
-          SUM("lifetimePoints") as "globalPoints",
-          SUM("totalTaps") as "globalTaps"
-        FROM "Player"
+          SUM(lifetime_points) as "globalPoints",
+          SUM(total_taps) as "globalTaps"
+        FROM ponder.player
       `);
 
       return result[0];

@@ -24,27 +24,44 @@ export async function GET(
 
       // We need rank for season and all-time, plus total stats
       const result = await db.execute(sql`
-        WITH UserStats AS (
-          SELECT p.id, p."lifetimePoints", p."totalTaps", p."lastActive", sp."seasonEggs"
-          FROM "Player" p
-          LEFT JOIN "SeasonPlayer" sp ON sp.address = p.id
-          WHERE p.id = ${address}
+        WITH PlayerStats AS (
+          SELECT id, lifetime_points as "lifetimePoints", last_active as "lastActive", total_taps as "totalTaps"
+          FROM ponder.player
+          WHERE id = ${address}
         ),
-        SeasonRank AS (
-          SELECT COUNT(*) + 1 as rank
-          FROM "SeasonPlayer"
-          WHERE "seasonEggs" > (SELECT COALESCE("seasonEggs", 0) FROM UserStats)
+        SeasonStats AS (
+          SELECT season_eggs as "seasonEggs", season_id as "seasonId"
+          FROM ponder.season_player
+          WHERE address = ${address}
+          ORDER BY season_id DESC
+          LIMIT 1
         ),
         AllTimeRank AS (
-          SELECT COUNT(*) + 1 as rank
-          FROM "Player"
-          WHERE "lifetimePoints" > (SELECT COALESCE("lifetimePoints", 0) FROM UserStats)
+          SELECT rank FROM (
+            SELECT id, RANK() OVER (ORDER BY lifetime_points DESC) as rank
+            FROM ponder.player
+          ) ranks WHERE id = ${address}
+        ),
+        SeasonRank AS (
+          SELECT rank FROM (
+            SELECT address, RANK() OVER (ORDER BY season_eggs DESC) as rank
+            FROM ponder.season_player
+            WHERE season_id = (SELECT COALESCE(MAX(season_id), 0) FROM ponder.season_player WHERE address = ${address})
+          ) ranks WHERE address = ${address}
         )
         SELECT 
-          u.*,
-          (SELECT rank FROM SeasonRank) as "seasonRank",
-          (SELECT rank FROM AllTimeRank) as "allTimeRank"
-        FROM UserStats u;
+          ps.id,
+          ps."lifetimePoints",
+          ps."lastActive",
+          ps."totalTaps",
+          COALESCE(ss."seasonEggs", 0) as "seasonEggs",
+          COALESCE(ss."seasonId", 0) as "seasonId",
+          COALESCE(ar.rank, 0) as "allTimeRank",
+          COALESCE(sr.rank, 0) as "seasonRank"
+        FROM PlayerStats ps
+        LEFT JOIN SeasonStats ss ON true
+        LEFT JOIN AllTimeRank ar ON true
+        LEFT JOIN SeasonRank sr ON true
       `);
 
       if (result.length === 0) {

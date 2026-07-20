@@ -14,12 +14,11 @@ export async function GET() {
 
       const result = await db.execute(sql`
         SELECT 
-          "transactionHash", 
-          "player", 
-          "newScore", 
-          "blockTimestamp"
-        FROM "TapEvent"
-        ORDER BY "blockTimestamp" DESC
+          player as address, 
+          new_score as "newScore",
+          block_timestamp as timestamp
+        FROM ponder.tap_event
+        ORDER BY block_timestamp DESC, log_index DESC
         LIMIT 50
       `);
 

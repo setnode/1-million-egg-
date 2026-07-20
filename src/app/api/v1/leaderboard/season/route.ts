@@ -13,9 +13,10 @@ export async function GET() {
       if (!db) throw new Error("Database not configured");
 
       const result = await db.execute(sql`
-        SELECT id, target, "totalEggs"
-        FROM "Season"
-        WHERE id = 0
+        SELECT id, target, total_eggs as "totalEggs"
+        FROM ponder.season
+        ORDER BY id DESC
+        LIMIT 1
       `);
 
       if (result.length === 0) {

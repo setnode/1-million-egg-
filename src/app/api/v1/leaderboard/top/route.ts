@@ -21,26 +21,24 @@ export async function GET(request: Request) {
         const result = await db.execute(sql`
           SELECT 
             id as address, 
-            "lifetimePoints", 
-            "totalTaps",
-            RANK() OVER (ORDER BY "lifetimePoints" DESC) as rank
-          FROM "Player"
-          ORDER BY "lifetimePoints" DESC
+            lifetime_points as "lifetimePoints", 
+            total_taps as "totalTaps",
+            RANK() OVER (ORDER BY lifetime_points DESC) as rank
+          FROM ponder.player
+          ORDER BY lifetime_points DESC
           LIMIT 100
         `);
         return result;
       } else {
-        // Wait, seasonEggs are stored in SeasonPlayer according to our latest schema!
-        // We need to join SeasonPlayer to Player, or just query SeasonPlayer if we only want season eggs.
         const result = await db.execute(sql`
           SELECT 
             sp.address, 
-            sp."seasonEggs", 
-            p."lifetimePoints",
-            RANK() OVER (ORDER BY sp."seasonEggs" DESC) as rank
-          FROM "SeasonPlayer" sp
-          LEFT JOIN "Player" p ON p.id = sp.address
-          ORDER BY sp."seasonEggs" DESC
+            sp.season_eggs as "seasonEggs", 
+            p.lifetime_points as "lifetimePoints",
+            RANK() OVER (ORDER BY sp.season_eggs DESC) as rank
+          FROM ponder.season_player sp
+          LEFT JOIN ponder.player p ON p.id = sp.address
+          ORDER BY sp.season_eggs DESC
           LIMIT 100
         `);
         return result;

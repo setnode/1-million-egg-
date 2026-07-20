@@ -27,20 +27,20 @@ export async function GET(request: Request) {
       const [playerRes, seasonRes, statsRes] = await Promise.all([
         db.execute(sql`
           WITH UserStats AS (
-            SELECT p.id, p."lifetimePoints", sp."seasonEggs"
-            FROM "Player" p
-            LEFT JOIN "SeasonPlayer" sp ON sp.address = p.id
+            SELECT p.id, p.lifetime_points as "lifetimePoints", sp.season_eggs as "seasonEggs"
+            FROM ponder.player p
+            LEFT JOIN ponder.season_player sp ON sp.address = p.id
             WHERE p.id = ${address}
           ),
           SeasonRank AS (
             SELECT COUNT(*) + 1 as rank
-            FROM "SeasonPlayer"
-            WHERE "seasonEggs" > (SELECT COALESCE("seasonEggs", 0) FROM UserStats)
+            FROM ponder.season_player
+            WHERE season_eggs > (SELECT COALESCE("seasonEggs", 0) FROM UserStats)
           )
           SELECT u.*, (SELECT rank FROM SeasonRank) as "seasonRank" FROM UserStats u;
         `),
-        db.execute(sql`SELECT "target", "totalEggs" FROM "Season" WHERE id = 0`),
-        db.execute(sql`SELECT COUNT(*) as "total" FROM "Player"`)
+        db.execute(sql`SELECT target, total_eggs as "totalEggs" FROM ponder.season ORDER BY id DESC LIMIT 1`),
+        db.execute(sql`SELECT COUNT(*) as "total" FROM ponder.player`)
       ]);
 
       if (playerRes.length > 0) dbPlayer = playerRes[0];
