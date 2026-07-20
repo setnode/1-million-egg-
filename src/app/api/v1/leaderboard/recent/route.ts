@@ -16,11 +16,12 @@ export async function GET() {
       const prefix = await getPonderPrefix();
       const result = await db.execute(sql.raw(`
         SELECT 
+          id, 
           player as address, 
-          "newScore",
-          "blockTimestamp" as timestamp
+          new_score as "newScore", 
+          block_timestamp as "timestamp"
         FROM "${prefix}TapEvent"
-        ORDER BY "blockTimestamp" DESC, "logIndex" DESC
+        ORDER BY block_timestamp DESC, log_index DESC
         LIMIT 50
       `));
 

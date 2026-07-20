@@ -22,9 +22,9 @@ export async function GET(request: Request) {
       
       if (type === 'debug_tables') {
         const tables = await db.execute(sql`
-          SELECT tablename
-          FROM pg_tables
-          WHERE schemaname = 'public'
+          SELECT column_name 
+          FROM information_schema.columns 
+          WHERE table_name = 'd1ff__SeasonPlayer'
         `);
         return tables;
       }
@@ -33,11 +33,11 @@ export async function GET(request: Request) {
         const result = await db.execute(sql.raw(`
           SELECT 
             id as address, 
-            "lifetimePoints", 
-            "totalTaps",
-            RANK() OVER (ORDER BY "lifetimePoints" DESC) as rank
+            lifetime_points as "lifetimePoints", 
+            total_taps as "totalTaps",
+            RANK() OVER (ORDER BY lifetime_points DESC) as rank
           FROM "${prefix}Player"
-          ORDER BY "lifetimePoints" DESC
+          ORDER BY lifetime_points DESC
           LIMIT 100
         `));
         return result;
@@ -45,12 +45,12 @@ export async function GET(request: Request) {
         const result = await db.execute(sql.raw(`
           SELECT 
             sp.address, 
-            sp."seasonEggs", 
-            p."lifetimePoints",
-            RANK() OVER (ORDER BY sp."seasonEggs" DESC) as rank
+            sp.season_eggs as "seasonEggs", 
+            p.lifetime_points as "lifetimePoints",
+            RANK() OVER (ORDER BY sp.season_eggs DESC) as rank
           FROM "${prefix}SeasonPlayer" sp
           LEFT JOIN "${prefix}Player" p ON p.id = sp.address
-          ORDER BY sp."seasonEggs" DESC
+          ORDER BY sp.season_eggs DESC
           LIMIT 100
         `));
         return result;

@@ -27,32 +27,32 @@ export async function GET(
       // We need rank for season and all-time, plus total stats
       const result = await db.execute(sql.raw(`
         WITH PlayerStats AS (
-          SELECT id, "lifetimePoints", "lastActive", "totalTaps"
+          SELECT id, lifetime_points as "lifetimePoints", last_active as "lastActive", total_taps as "totalTaps"
           FROM "${prefix}Player"
           WHERE id = '${address}'
         ),
         SeasonStats AS (
-          SELECT "seasonEggs", "seasonId"
+          SELECT season_eggs as "seasonEggs", season_id as "seasonId"
           FROM "${prefix}SeasonPlayer"
           WHERE address = '${address}'
-          ORDER BY "seasonId" DESC
+          ORDER BY season_id DESC
           LIMIT 1
         ),
         AllTimeRank AS (
           SELECT rank FROM (
-            SELECT id, RANK() OVER (ORDER BY "lifetimePoints" DESC) as rank
+            SELECT id, RANK() OVER (ORDER BY lifetime_points DESC) as rank
             FROM "${prefix}Player"
           ) ranks WHERE id = '${address}'
         ),
         SeasonRank AS (
           SELECT rank FROM (
-            SELECT address, RANK() OVER (ORDER BY "seasonEggs" DESC) as rank
+            SELECT address, RANK() OVER (ORDER BY season_eggs DESC) as rank
             FROM "${prefix}SeasonPlayer"
-            WHERE "seasonId" = (SELECT COALESCE(MAX("seasonId"), 0) FROM "${prefix}SeasonPlayer" WHERE address = '${address}')
+            WHERE season_id = (SELECT COALESCE(MAX(season_id), 0) FROM "${prefix}SeasonPlayer" WHERE address = '${address}')
           ) ranks WHERE address = '${address}'
         )
         SELECT 
-          ps.id,
+          ps.id as address,
           ps."lifetimePoints",
           ps."lastActive",
           ps."totalTaps",

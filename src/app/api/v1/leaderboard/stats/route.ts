@@ -16,9 +16,9 @@ export async function GET() {
       const prefix = await getPonderPrefix();
       const result = await db.execute(sql.raw(`
         SELECT 
-          COUNT(*) as "totalPlayers",
-          SUM("lifetimePoints") as "globalPoints",
-          SUM("totalTaps") as "globalTaps"
+          SUM(lifetime_points) as "globalPoints",
+          SUM(total_taps) as "globalTaps",
+          COUNT(*) as "totalPlayers"
         FROM "${prefix}Player"
       `));
 
