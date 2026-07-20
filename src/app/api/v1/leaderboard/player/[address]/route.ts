@@ -7,10 +7,11 @@ export const dynamic = "force-dynamic";
 
 export async function GET(
   request: Request,
-  { params }: { params: { address: string } }
+  { params }: { params: Promise<{ address: string }> }
 ) {
   try {
-    const address = params.address.toLowerCase();
+    const { address: rawAddress } = await params;
+    const address = rawAddress.toLowerCase();
     const cacheKey = `v1:leaderboard:player:${address}`;
     
     const data = await withCache(cacheKey, 15, async () => {
