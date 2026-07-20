@@ -1,5 +1,5 @@
 import { ponder } from "@/generated";
-import * as schema from "../../ponder.schema";
+import * as schema from "../ponder.schema";
 
 // Ensure all addresses are lowercase
 const formatId = (address: string) => address.toLowerCase();
