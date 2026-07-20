@@ -24,14 +24,13 @@ export async function getPonderPrefix(): Promise<string> {
         const prefix = `${val.instance_id}__`;
         // Verify table actually exists (protect against ghost/failed Ponder deployments)
         const checkRes = await db.execute(sql.raw(`
-          SELECT EXISTS (
-            SELECT FROM information_schema.tables 
-            WHERE table_schema = 'public' 
-            AND table_name = '${prefix}Player'
-          ) as "exists"
+          SELECT tablename 
+          FROM pg_tables 
+          WHERE schemaname = 'public' 
+          AND tablename = '${prefix}Player'
         `));
         
-        if (checkRes[0] && (checkRes[0] as any).exists) {
+        if (checkRes.length > 0) {
           cachedPrefix = prefix;
           lastFetchTime = now;
           return cachedPrefix;
@@ -67,14 +66,13 @@ export async function getPonderPrefix(): Promise<string> {
     for (const inst of instances) {
       const prefix = `${inst.id}__`;
       const checkRes = await db.execute(sql.raw(`
-        SELECT EXISTS (
-          SELECT FROM information_schema.tables 
-          WHERE table_schema = 'public' 
-          AND table_name = '${prefix}Player'
-        ) as "exists"
+        SELECT tablename 
+        FROM pg_tables 
+        WHERE schemaname = 'public' 
+        AND tablename = '${prefix}Player'
       `));
       
-      if (checkRes[0] && (checkRes[0] as any).exists) {
+      if (checkRes.length > 0) {
         cachedPrefix = prefix;
         lastFetchTime = now;
         return cachedPrefix;
