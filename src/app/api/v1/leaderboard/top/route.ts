@@ -22,9 +22,13 @@ export async function GET(request: Request) {
       
       if (type === 'debug_tables') {
         const tables = await db.execute(sql`
-          SELECT column_name 
-          FROM information_schema.columns 
-          WHERE table_name = 'd1ff__SeasonPlayer'
+          SELECT tablename, (xpath('/row/cnt/text()', xml_count))[1]::text::int as row_count
+          FROM (
+            SELECT tablename, query_to_xml(format('select count(*) as cnt from public.%I', tablename), false, true, '') as xml_count
+            FROM pg_tables
+            WHERE schemaname = 'public' AND tablename LIKE '%__Player'
+          ) t
+          ORDER BY row_count DESC
         `);
         return tables;
       }
