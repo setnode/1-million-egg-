@@ -34,9 +34,11 @@ export async function GET(request: Request) {
       const s = (seasonRows[0] ?? {}) as any;
       const st = (statsRows[0] ?? {}) as any;
 
+      const rawTarget = Number(s.seasonTarget ?? 0);
+
       return {
         currentSeason: Number(s.currentSeason ?? 0),
-        seasonTarget: Number(s.seasonTarget ?? 1_000_000),
+        seasonTarget: rawTarget > 0 ? rawTarget : 1_000_000,
         seasonTotalEggs: Number(s.seasonTotalEggs ?? 0),
         totalPlayers: Number(st.totalPlayers ?? 0),
       };

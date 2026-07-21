@@ -25,7 +25,12 @@ export async function GET() {
         return { id: 0, target: 1000000, totalEggs: 0 };
       }
 
-      return result[0];
+      const row = result[0];
+      const target = Number(row.target);
+      return {
+        ...row,
+        target: target > 0 ? target : 1000000
+      };
     });
 
     return NextResponse.json({ success: true, data });
