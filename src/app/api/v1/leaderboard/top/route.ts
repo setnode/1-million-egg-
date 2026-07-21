@@ -36,12 +36,18 @@ export async function GET(request: Request) {
       if (type === 'all') {
         const result = await db.execute(sql.raw(`
           SELECT 
-            id as address, 
-            lifetime_points as "lifetimePoints", 
-            total_taps as "totalTaps",
-            RANK() OVER (ORDER BY lifetime_points DESC) as rank
-          FROM "${prefix}Player"
-          ORDER BY lifetime_points DESC
+            p.id as address, 
+            p.lifetime_points as "lifetimePoints", 
+            p.total_taps as "totalTaps",
+            COALESCE(se.total_eggs, 0) as "totalSeasonEggs",
+            RANK() OVER (ORDER BY p.lifetime_points DESC) as rank
+          FROM "${prefix}Player" p
+          LEFT JOIN (
+            SELECT address, SUM(season_eggs) as total_eggs 
+            FROM "${prefix}SeasonPlayer" 
+            GROUP BY address
+          ) se ON p.id = se.address
+          ORDER BY p.lifetime_points DESC
           LIMIT 100
         `));
         return result;

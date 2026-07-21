@@ -150,6 +150,7 @@ export default function Home() {
         topPlayers: topPlayers.map((p: any) => ({
           address: p.address,
           seasonEggs: p.seasonEggs || 0,
+          totalSeasonEggs: p.totalSeasonEggs || 0,
           lifetimePoints: p.lifetimePoints || 0,
           totalTaps: p.totalTaps || 0,
           rank: Number(p.rank),
@@ -157,6 +158,7 @@ export default function Home() {
         yourRank: playerInfo ? {
           address: playerInfo.id || address,
           seasonEggs: playerInfo.seasonEggs || 0,
+          totalSeasonEggs: playerInfo.totalSeasonEggs || 0,
           lifetimePoints: playerInfo.lifetimePoints || 0,
           totalTaps: playerInfo.totalTaps || 0,
           rank: Number(type === 'season' ? playerInfo.seasonRank : playerInfo.allTimeRank),
@@ -787,7 +789,7 @@ export default function Home() {
                           {selectedSeasonTab === 'all' ? entry.lifetimePoints.toLocaleString('en-US') : entry.seasonEggs.toLocaleString('en-US')}
                         </div>
                         <div style={{ fontSize: '0.7rem', color: '#9ca3af' }}>
-                          {selectedSeasonTab === 'all' ? `${(entry.totalTaps || 0).toLocaleString('en-US')} Taps` : `${entry.lifetimePoints.toLocaleString('en-US')} TP`}
+                          {selectedSeasonTab === 'all' ? `${(entry.totalSeasonEggs || 0).toLocaleString('en-US')} Eggs` : `${entry.lifetimePoints.toLocaleString('en-US')} TP`}
                         </div>
                       </div>
                     </div>
@@ -826,7 +828,7 @@ export default function Home() {
                   </span>
                 </div>
                 <div style={{ fontSize: '0.75rem', color: '#9ca3af', fontWeight: '500' }}>
-                  {selectedSeasonTab === 'all' ? `${(yourRankData?.totalTaps || 0).toLocaleString('en-US')} Taps` : `${(yourRankData?.lifetimePoints || 0).toLocaleString('en-US')} TP`}
+                  {selectedSeasonTab === 'all' ? `${(yourRankData?.totalSeasonEggs || 0).toLocaleString('en-US')} Eggs` : `${(yourRankData?.lifetimePoints || 0).toLocaleString('en-US')} TP`}
                 </div>
               </div>
             </div>

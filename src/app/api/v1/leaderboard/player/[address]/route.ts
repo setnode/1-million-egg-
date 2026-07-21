@@ -38,6 +38,11 @@ export async function GET(
           ORDER BY season_id DESC
           LIMIT 1
         ),
+        AllTimeEggs AS (
+          SELECT SUM(season_eggs) as "totalSeasonEggs"
+          FROM "${prefix}SeasonPlayer"
+          WHERE address = '${address}'
+        ),
         AllTimeRank AS (
           SELECT rank FROM (
             SELECT id, RANK() OVER (ORDER BY lifetime_points DESC) as rank
@@ -57,11 +62,13 @@ export async function GET(
           ps."lastActive",
           ps."totalTaps",
           COALESCE(ss."seasonEggs", 0) as "seasonEggs",
+          COALESCE(ate."totalSeasonEggs", 0) as "totalSeasonEggs",
           COALESCE(ss."seasonId", 0) as "seasonId",
           COALESCE(ar.rank, 0) as "allTimeRank",
           COALESCE(sr.rank, 0) as "seasonRank"
         FROM PlayerStats ps
         LEFT JOIN SeasonStats ss ON true
+        LEFT JOIN AllTimeEggs ate ON true
         LEFT JOIN AllTimeRank ar ON true
         LEFT JOIN SeasonRank sr ON true
       `));
