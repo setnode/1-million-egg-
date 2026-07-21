@@ -151,12 +151,14 @@ export default function Home() {
           address: p.address,
           seasonEggs: p.seasonEggs || 0,
           lifetimePoints: p.lifetimePoints || 0,
+          totalTaps: p.totalTaps || 0,
           rank: Number(p.rank),
         })),
         yourRank: playerInfo ? {
           address: playerInfo.id || address,
           seasonEggs: playerInfo.seasonEggs || 0,
           lifetimePoints: playerInfo.lifetimePoints || 0,
+          totalTaps: playerInfo.totalTaps || 0,
           rank: Number(type === 'season' ? playerInfo.seasonRank : playerInfo.allTimeRank),
         } : undefined,
         totalPlayers: Number(stats.totalPlayers || 0),
@@ -781,8 +783,12 @@ export default function Home() {
                         <span className="name">{entry.address.slice(0, 6)}...{entry.address.slice(-4)}</span>
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
-                        <div className="score" style={{ fontSize: '1rem' }}>{entry.seasonEggs.toLocaleString('en-US')}</div>
-                        <div style={{ fontSize: '0.7rem', color: '#9ca3af' }}>{entry.lifetimePoints.toLocaleString('en-US')} TP</div>
+                        <div className="score" style={{ fontSize: '1rem' }}>
+                          {selectedSeasonTab === 'all' ? entry.lifetimePoints.toLocaleString('en-US') : entry.seasonEggs.toLocaleString('en-US')}
+                        </div>
+                        <div style={{ fontSize: '0.7rem', color: '#9ca3af' }}>
+                          {selectedSeasonTab === 'all' ? `${(entry.totalTaps || 0).toLocaleString('en-US')} Taps` : `${entry.lifetimePoints.toLocaleString('en-US')} TP`}
+                        </div>
                       </div>
                     </div>
                   );
@@ -813,8 +819,15 @@ export default function Home() {
                 </div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
-                <div style={{ fontWeight: '800', color: '#fff' }}>{yourRankData?.seasonEggs?.toLocaleString('en-US') || 0} Eggs</div>
-                <div style={{ fontSize: '0.7rem', color: '#9ca3af' }}>{yourRankData?.lifetimePoints?.toLocaleString('en-US') || 0} TP</div>
+                <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#fff', display: 'flex', gap: '4px', alignItems: 'center' }}>
+                  {selectedSeasonTab === 'all' ? (yourRankData?.lifetimePoints?.toLocaleString('en-US') || 0) : (yourRankData?.seasonEggs?.toLocaleString('en-US') || 0)} 
+                  <span style={{ fontSize: '0.8rem', color: '#f59e0b' }}>
+                    {selectedSeasonTab === 'all' ? 'TP' : 'Eggs'}
+                  </span>
+                </div>
+                <div style={{ fontSize: '0.75rem', color: '#9ca3af', fontWeight: '500' }}>
+                  {selectedSeasonTab === 'all' ? `${(yourRankData?.totalTaps || 0).toLocaleString('en-US')} Taps` : `${(yourRankData?.lifetimePoints || 0).toLocaleString('en-US')} TP`}
+                </div>
               </div>
             </div>
           </div>
