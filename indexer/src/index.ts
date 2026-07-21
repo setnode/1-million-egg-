@@ -95,6 +95,23 @@ ponder.on("MillionEgg:DailyClaimed", async ({ event, context }) => {
     streak: currentStreak,
     eggsGiven: eggsGiven,
   }).onConflictDoNothing();
+
+  // Update Player aggregate: add daily eggs to lifetimePoints
+  const existingPlayer = await context.db.find(schema.player, { id: playerId });
+  if (existingPlayer) {
+    await context.db.update(schema.player, { id: playerId }).set({
+      lifetimePoints: existingPlayer.lifetimePoints + eggsGiven,
+      lastActive: event.block.timestamp,
+    });
+  } else {
+    // Player doesn't exist yet — create with daily eggs as initial lifetime points
+    await context.db.insert(schema.player).values({
+      id: playerId,
+      lifetimePoints: eggsGiven,
+      lastActive: event.block.timestamp,
+      totalTaps: 0,
+    });
+  }
 });
 
 ponder.on("MillionEgg:SeasonEggsUpdated", async ({ event, context }) => {
