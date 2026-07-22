@@ -1,5 +1,4 @@
-import { db } from "../../../src/services/db";
-import { playerFid, notificationToken, notificationQueue } from "../../../src/services/db/schema";
+import { db, playerFid, notificationToken, notificationQueue } from "../db";
 import { inArray, eq, and, lte } from "drizzle-orm";
 
 export async function fetchBatch() {
