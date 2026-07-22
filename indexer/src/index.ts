@@ -1,5 +1,7 @@
 import { ponder } from "@/generated";
 import * as schema from "../ponder.schema";
+import { db } from "../../src/services/db";
+import { notificationQueue } from "../../src/services/db/schema";
 
 // Ensure all addresses are lowercase
 const formatId = (address: string) => address.toLowerCase();
@@ -111,6 +113,27 @@ ponder.on("MillionEgg:DailyClaimed", async ({ event, context }) => {
       lastActive: event.block.timestamp,
       totalTaps: 0,
     });
+  }
+
+  // --- Notification Engine: Enqueue Daily Claim Reminder ---
+  // Isolate this logic to prevent any side effects on the main indexer
+  const ONE_HOUR = 3600n;
+  const currentTimestamp = BigInt(Math.floor(Date.now() / 1000));
+  
+  // Only queue if the event happened in the last hour (prevents spam during Ponder historical sync)
+  if (db && event.block.timestamp > currentTimestamp - ONE_HOUR) {
+    const sendAtTime = Number(event.block.timestamp) + 86400; // 24 hours later
+    try {
+      await db.insert(notificationQueue).values({
+        playerAddress: playerId,
+        type: 'daily_claim',
+        sendAt: sendAtTime,
+        status: 'pending',
+        retryCount: 0,
+      }).onConflictDoNothing();
+    } catch (err) {
+      console.error("[Notification Engine] Failed to enqueue daily claim reminder:", err);
+    }
   }
 });
 
