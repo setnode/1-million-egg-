@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
+    "@farcaster/frame-node": "^0.2.0",
     "@farcaster/frame-sdk": "^0.0.23",
     "@farcaster/frame-wagmi-connector": "^0.0.9",
     "@rainbow-me/rainbowkit": "^2.2.11",
