@@ -3,12 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "ponder dev",
-    "start": "ponder start",
+    "dev": "concurrently \"ponder dev\" \"tsx src/worker.ts\"",
+    "start": "concurrently \"ponder start\" \"tsx src/worker.ts\"",
     "codegen": "ponder codegen"
   },
   "dependencies": {
     "@ponder/core": "latest",
+    "concurrently": "^10.0.3",
+    "tsx": "^4.23.1",
     "viem": "latest"
   },
   "devDependencies": {
