@@ -21,14 +21,13 @@ import { LandingPage } from '@/components/landing/LandingPage';
 import { DailyClaimSection } from '@/components/DailyClaimSection';
 import { EggClicker } from '@/components/EggClicker';
 import { REWARD_TIERS } from '@/constants/rewards';
-import { BossRaidScreen } from '@/components/BossRaid/BossRaidScreen';
 
 export default function Home() {
   const { address, isConnected } = useAccount();
   const [isMounted, setIsMounted] = useState(false);
   const [showShareOptions, setShowShareOptions] = useState(false);
   const [farcasterUser, setFarcasterUser] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState<'home' | 'rewards' | 'leaderboard' | 'profile' | 'game'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'rewards' | 'leaderboard' | 'profile'>('home');
   const [confirmClaimTier, setConfirmClaimTier] = useState<number | null>(null);
   const [selectedSeasonTab, setSelectedSeasonTab] = useState<'0' | 'all'>('0');
 
@@ -666,13 +665,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* --- GAME TAB --- */}
-      {activeTab === 'game' && (
-        <div className="tab-content animate-slide-up">
-          <BossRaidScreen />
-        </div>
-      )}
-
       {/* --- PROFILE TAB --- */}
       {activeTab === 'profile' && (
         <div className="tab-content fade-in">
@@ -799,12 +791,6 @@ export default function Home() {
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
           </div>
           <span>Ranking</span>
-        </button>
-        <button className={`nav-item ${activeTab === 'game' ? 'active' : ''}`} onClick={() => setActiveTab('game')}>
-          <div className="nav-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 10c-.83 0-1.5-.67-1.5-1.5v-5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5z"/><path d="M20.5 10H19V8.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/><path d="M9.5 14c.83 0 1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5S8 21.33 8 20.5v-5c0-.83.67-1.5 1.5-1.5z"/><path d="M3.5 14H5v1.5c0 .83-.67 1.5-1.5 1.5S2 16.33 2 15.5 2.67 14 3.5 14z"/><path d="M14 14.5c0-.83.67-1.5 1.5-1.5h5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5h-5c-.83 0-1.5-.67-1.5-1.5z"/><path d="M15.5 9H14v1.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5S16.33 9 15.5 9z"/><path d="M10 9.5C10 8.67 9.33 8 8.5 8h-5C2.67 8 2 8.67 2 9.5S2.67 11 3.5 11h5c.83 0 1.5-.67 1.5-1.5z"/><path d="M8.5 15H10v-1.5c0-.83-.67-1.5-1.5-1.5S7 12.67 7 13.5 7.67 15 8.5 15z"/></svg>
-          </div>
-          <span>Game</span>
         </button>
         <button className={`nav-item ${activeTab === 'rewards' ? 'active' : ''}`} onClick={() => setActiveTab('rewards')}>
           <div className="nav-icon">
